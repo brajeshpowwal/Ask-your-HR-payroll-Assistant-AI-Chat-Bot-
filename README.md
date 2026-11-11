@@ -59,8 +59,8 @@ The model is called 3 times for a normal question: pick tables, write SQL, expla
 | departments | 24 | 6 departments per company with cost centers |
 | employees | 635 | Hires, leavers, job levels, manager hierarchy, work state |
 | salaries | 2,111 | Salary history: new hire, annual merit, promotion |
-| payroll_runs | 24,437 | Two years of biweekly payroll (gross, tax, benefits, net, employer tax) |
-| payroll_exceptions | 439 | Payroll issues with status and resolution dates |
+| payroll_runs | 23,891 | Two years of biweekly payroll (gross, tax, benefits, net, employer tax) |
+| payroll_exceptions | 431 | Payroll issues with status and resolution dates |
 | attendance | 35,186 | Daily attendance for the last 90 days |
 | performance_reviews | 1,706 | Half-yearly ratings 1–5 |
 | leave_balances | 1,506 | Annual, sick and personal leave balances |

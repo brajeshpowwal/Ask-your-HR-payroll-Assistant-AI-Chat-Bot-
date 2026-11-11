@@ -49,7 +49,7 @@ salaries:
     change_reason: "'New Hire', 'Annual Merit' or 'Promotion'."
 
 payroll_runs:
-  description: One row per employee per biweekly pay period (14 days), from 2024-11-01 to 2026-10-29. Some rows are accidental duplicate payments (same employee and same pay_period_start twice).
+  description: One row per employee per biweekly pay period (14 days), from 2024-11-01 to 2026-10-15 (pay dates up to 2026-10-20; nothing is paid after the snapshot date). Some rows are accidental duplicate payments (same employee and same pay_period_start twice).
   columns:
     payroll_id: Primary key.
     employee_id: Employee paid.

@@ -302,8 +302,8 @@ Training needs huge data and GPUs; fine-tuning needs hundreds of good examples a
 | Tables | 9 |
 | Companies (fictional) | 4 |
 | Employees | 635 (543 active) |
-| Payroll rows | 24,437 (biweekly, 2024-11-01 to 2026-10-29) |
-| Payroll exceptions | 439 (19 duplicate payments planted) |
+| Payroll rows | 23,891 (biweekly periods 2024-11-01 to 2026-10-15) |
+| Payroll exceptions | 431 (19 duplicate payments planted) |
 | Attendance rows | 35,186 (last 90 days) |
 | Snapshot "today" | 2026-10-31 |
 | Few-shot examples | 30 (4 retrieved per question) |

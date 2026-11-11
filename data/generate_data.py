@@ -401,6 +401,12 @@ def generate(out_path: Path | str = DEFAULT_PATH) -> Path:
             used = min(entitled, float(used_by.get((e["employee_id"], ltype), 0)) + rng.choice([0, 1, 2, 3, 5]))
             balances.append((e["employee_id"], ltype, entitled, used, entitled - used))
 
+    # A pay date after the snapshot has not happened yet. Such rows are dropped only here,
+    # after every random draw, so all other generated values stay exactly the same.
+    payroll = [row for row in payroll if row[5] <= SNAPSHOT_DATE.isoformat()]
+    paid_ids = {row[0] for row in payroll}
+    exceptions = [x for x in exceptions if x[1] in paid_ids]
+
     # ----------------------------------------------------------------- write
     con = sqlite3.connect(out_path)
     con.executescript(SCHEMA)

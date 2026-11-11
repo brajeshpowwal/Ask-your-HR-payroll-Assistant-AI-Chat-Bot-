@@ -1,7 +1,7 @@
 import hashlib
 import sqlite3
 
-from data.generate_data import COMPANIES, EMPLOYER_TAX_RATE, generate
+from data.generate_data import COMPANIES, EMPLOYER_TAX_RATE, SNAPSHOT_DATE, generate
 
 TABLES = ["companies", "departments", "employees", "salaries", "payroll_runs",
           "payroll_exceptions", "attendance", "performance_reviews", "leave_balances"]
@@ -59,6 +59,16 @@ def test_employer_tax_follows_fica_rule(db_path):
     for employment_type, gross, employer_tax in rows:
         expected = 0.0 if employment_type == "Contract" else round(gross * EMPLOYER_TAX_RATE, 2)
         assert abs(employer_tax - expected) <= 0.01, (employment_type, gross, employer_tax)
+
+
+def test_no_payment_after_snapshot_date(db_path):
+    """'Today' in the data is SNAPSHOT_DATE; a payment after it has not happened yet."""
+    con = sqlite3.connect(db_path)
+    last_pay, last_raised = con.execute(
+        "SELECT (SELECT MAX(pay_date) FROM payroll_runs), (SELECT MAX(raised_date) FROM payroll_exceptions)"
+    ).fetchone()
+    assert last_pay <= SNAPSHOT_DATE.isoformat()
+    assert last_raised <= SNAPSHOT_DATE.isoformat()
 
 
 def test_planted_duplicates_exist(db_path):
