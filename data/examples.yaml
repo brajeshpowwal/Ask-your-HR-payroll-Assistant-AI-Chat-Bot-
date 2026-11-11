@@ -285,3 +285,61 @@
     WHERE e.status = 'Active' AND c.company_name = 'Northpeak Logistics'
     GROUP BY d.department_name
     ORDER BY salary_rank;
+
+- question: What was the attrition rate per department in 2025?
+  sql: |
+    WITH bounds AS (SELECT '2025-01-01' AS start_d, '2025-12-31' AS end_d)
+    SELECT d.department_name,
+           ROUND(100.0 * SUM(CASE WHEN e.termination_date >= b.start_d AND e.termination_date <= b.end_d THEN 1 ELSE 0 END)
+                 / ((SUM(CASE WHEN e.hire_date <= b.start_d AND (e.termination_date IS NULL OR e.termination_date > b.start_d) THEN 1 ELSE 0 END)
+                   + SUM(CASE WHEN e.hire_date <= b.end_d AND (e.termination_date IS NULL OR e.termination_date > b.end_d) THEN 1 ELSE 0 END)) / 2.0), 1)
+             AS attrition_rate_pct
+    FROM employees e
+    JOIN departments d ON d.department_id = e.department_id
+    CROSS JOIN bounds b
+    GROUP BY d.department_name
+    ORDER BY attrition_rate_pct DESC;
+
+- question: Show the quarter-over-quarter change in total overtime hours for 2025.
+  sql: |
+    WITH q AS (
+      SELECT strftime('%Y', pay_date) || '-Q' || ((CAST(strftime('%m', pay_date) AS INTEGER) + 2) / 3) AS quarter,
+             SUM(overtime_hours) AS overtime_hours
+      FROM payroll_runs
+      WHERE strftime('%Y', pay_date) = '2025'
+      GROUP BY quarter
+    )
+    SELECT quarter, ROUND(overtime_hours, 1) AS overtime_hours,
+           ROUND(overtime_hours - LAG(overtime_hours) OVER (ORDER BY quarter), 1) AS change_vs_prev
+    FROM q
+    ORDER BY quarter;
+
+- question: How many active employees got a merit raise or a promotion in 2025, by company?
+  sql: |
+    SELECT c.company_name, COUNT(DISTINCT e.employee_id) AS employees_with_raise
+    FROM employees e
+    JOIN companies c ON c.company_id = e.company_id
+    JOIN salaries s ON s.employee_id = e.employee_id
+    WHERE e.status = 'Active'
+      AND s.change_reason IN ('Annual Merit', 'Promotion')
+      AND strftime('%Y', s.effective_date) = '2025'
+    GROUP BY c.company_name
+    ORDER BY employees_with_raise DESC;
+
+- question: By what percentage has the salary of each active Sales employee at Cedarline Health grown since they were hired?
+  sql: |
+    WITH ranked AS (
+      SELECT employee_id, annual_salary,
+             ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY effective_date ASC) AS rn_first,
+             ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY effective_date DESC) AS rn_last
+      FROM salaries
+    )
+    SELECT e.first_name || ' ' || e.last_name AS employee_name,
+           ROUND(100.0 * (l.annual_salary - f.annual_salary) / f.annual_salary, 1) AS growth_pct
+    FROM employees e
+    JOIN ranked f ON f.employee_id = e.employee_id AND f.rn_first = 1
+    JOIN ranked l ON l.employee_id = e.employee_id AND l.rn_last = 1
+    JOIN departments d ON d.department_id = e.department_id
+    JOIN companies c ON c.company_id = e.company_id
+    WHERE e.status = 'Active' AND d.department_name = 'Sales' AND c.company_name = 'Cedarline Health'
+    ORDER BY growth_pct DESC;
