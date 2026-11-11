@@ -33,6 +33,11 @@ def nvidia_model_kwargs(settings: Settings) -> dict:
     return {"chat_template_kwargs": {"enable_thinking": False}}
 
 
+def nvidia_token_limit(settings: Settings) -> int:
+    """Thinking uses output tokens too; 1,024 can run out before the answer is written."""
+    return 4096 if settings.thinking else 1024
+
+
 def get_llm(settings: Settings | None = None) -> BaseChatModel:
     s = settings or get_settings()
     if s.provider not in API_KEY_ENV:
@@ -60,6 +65,7 @@ def get_llm(settings: Settings | None = None) -> BaseChatModel:
         if s.provider == "nvidia":
             from langchain_nvidia_ai_endpoints import ChatNVIDIA
             return ChatNVIDIA(model=s.model_name, temperature=s.temperature,
+                              max_completion_tokens=nvidia_token_limit(s),
                               model_kwargs=nvidia_model_kwargs(s))
     except ImportError as exc:  # package for this provider not installed
         package = {
