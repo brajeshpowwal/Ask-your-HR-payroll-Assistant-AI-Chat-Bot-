@@ -85,10 +85,18 @@ def _history_text(history: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def _df_to_text(df: pd.DataFrame, max_rows: int = 30) -> str:
-    if df.empty:
-        return "(no rows)"
-    return df.head(max_rows).to_csv(index=False)
+ROWS_SHOWN_TO_MODEL = 30  # keeps the explain prompt small; the user still sees every row
+
+
+def build_answer_prompt(question: str, df: pd.DataFrame, max_rows: int, snapshot: str) -> str:
+    """Tell the model how much of the result it sees, so it never summarises hidden rows."""
+    row_info = f"{len(df)} rows"
+    if len(df) > ROWS_SHOWN_TO_MODEL:
+        row_info += f", showing the first {ROWS_SHOWN_TO_MODEL}"
+    if len(df) >= max_rows:
+        row_info += ", cut off at the row limit"
+    result = df.head(ROWS_SHOWN_TO_MODEL).to_csv(index=False) if not df.empty else "(no rows)"
+    return prompts.ANSWER_USER.format(question=question, snapshot=snapshot, row_info=row_info, result=result)
 
 
 # ------------------------------------------------------------------- agent
@@ -182,9 +190,8 @@ class SQLAgent:
     def answer(self, state: AgentState) -> AgentState:
         df = state.get("result")
         df = df if df is not None else pd.DataFrame()
-        truncated = ", truncated at the row limit" if len(df) >= self.settings.max_rows else ""
-        text = self._ask(prompts.ANSWER_SYSTEM, prompts.ANSWER_USER.format(
-            question=state["question"], row_count=len(df), truncated=truncated, result=_df_to_text(df)))
+        text = self._ask(prompts.ANSWER_SYSTEM, build_answer_prompt(
+            state["question"], df, self.settings.max_rows, self.schema.snapshot_date()))
         return {"answer": text, "status": "ok", "llm_calls": state.get("llm_calls", 0) + 1,
                 "steps": state.get("steps", []) + ["Explained the result"]}
 

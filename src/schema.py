@@ -87,6 +87,10 @@ class SchemaInfo:
             blocks.append("\n".join(lines))
         return "\n\n".join(blocks)
 
+    def snapshot_date(self) -> str:
+        """The dataset's "today", so answers can spot periods that are not complete yet."""
+        return str(load_glossary(self.settings).get("snapshot_date", "unknown"))
+
     def glossary_prompt(self) -> str:
         rules = load_glossary(self.settings).get("rules", [])
         return "\n".join(f"- {r}" for r in rules)

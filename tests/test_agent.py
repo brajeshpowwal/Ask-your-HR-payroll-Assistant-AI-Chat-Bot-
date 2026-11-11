@@ -1,7 +1,8 @@
 """Agent tests use a fake LLM with scripted replies, so they are free, fast and offline."""
+import pandas as pd
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
 
-from src.agent import SQLAgent, extract_sql
+from src.agent import SQLAgent, build_answer_prompt, extract_sql
 
 GOOD_SQL = ("```sql\nSELECT c.company_name, COUNT(*) AS active_headcount FROM employees e "
             "JOIN companies c ON c.company_id = e.company_id WHERE e.status = 'Active' "
@@ -64,6 +65,25 @@ def test_bad_table_list_falls_back_to_full_schema(settings):
     agent = make_agent(settings, ["I think you need employees", GOOD_SQL, "ok"])
     res = agent.ask("Active headcount by company?")
     assert res.status == "ok" and len(res.tables) == len(settings.allowed_tables)
+
+
+def test_answer_prompt_says_when_rows_are_hidden():
+    """The model only sees 30 rows; it must know the rest exist so it doesn't summarise them."""
+    df = pd.DataFrame({"month": [f"m{i}" for i in range(40)], "gross": range(40)})
+    text = build_answer_prompt("q", df, max_rows=500, snapshot="2026-10-31")
+    assert "40 rows" in text and "first 30" in text
+    assert "m29" in text and "m30" not in text
+
+
+def test_answer_prompt_gives_snapshot_date():
+    df = pd.DataFrame({"n": [1]})
+    text = build_answer_prompt("q", df, max_rows=500, snapshot="2026-10-31")
+    assert "2026-10-31" in text and "first" not in text
+
+
+def test_answer_prompt_flags_row_limit():
+    df = pd.DataFrame({"n": range(5)})
+    assert "row limit" in build_answer_prompt("q", df, max_rows=5, snapshot="2026-10-31")
 
 
 def test_extract_sql_variants():

@@ -55,11 +55,18 @@ Fix the problem and return a corrected query."""
 
 ANSWER_SYSTEM = """You explain database results to a business user in plain English.
 Answer the question in 1 to 4 short sentences using ONLY the numbers in the result.
-Never invent numbers. Mention the most important figures. If the result is empty,
-say no matching data was found. If the result was cut off, say you are showing the first rows.
-Do not mention SQL, tables or columns."""
+Rules:
+- Never invent numbers. Copy figures exactly as they appear (you may shorten 3364512.4 to $3.36M).
+- Do not state a range, total or average unless you checked every value it covers.
+  Naming the highest and lowest values is safer than summarising a range.
+- Do not guess reasons (bonuses, seasonality, hiring) that the result does not show.
+- A month or period after "today" in the data is incomplete: say so if it appears.
+- If the result is empty, say no matching data was found.
+- If you only see part of the rows, say you are describing the rows shown.
+- Do not mention SQL, tables or columns."""
 
 ANSWER_USER = """Question: {question}
+Today in the data: {snapshot}
 
-Result ({row_count} rows{truncated}):
+Result ({row_info}):
 {result}"""
