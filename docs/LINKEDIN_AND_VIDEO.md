@@ -31,7 +31,7 @@ Type "Delete all employees."
 
 **2:05–2:25 · Proof**
 Show the accuracy table.
-"I don't just say it works: I test it on 50 questions from easy to hard. It gets 78 to 84% right with a free NVIDIA Nemotron model, depending on the run. There are also 68 automated tests running on every push."
+"I don't just say it works: I test it on 50 questions from easy to hard. It gets 78 to 84% right with a free NVIDIA Nemotron model, depending on the run. There are also 72 automated tests running on every push."
 
 **2:25–2:40 · Close**
 "All the data is fictional, and the full code is on GitHub. Link in the comments. I'd love feedback, especially from people working with HR and payroll data."

@@ -1,0 +1,194 @@
+/* TalkToData chat look: deep "night console" with glass panels and soft neon.
+   Selectors use Streamlit's data-testid attributes, which are stable across releases. */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap");
+
+:root {
+  --ttd-bg: #050912;
+  --ttd-glass: rgba(16, 26, 46, .66);
+  --ttd-line: rgba(130, 160, 255, .16);
+  --ttd-line-hi: rgba(130, 170, 255, .34);
+  --ttd-text: #e9eefb;
+  --ttd-muted: #8e9ab6;
+  --ttd-teal: #2fe3c5;
+  --ttd-blue: #4fa9ff;
+  --ttd-violet: #8f7dff;
+  --ttd-rose: #ff6f8e;
+}
+
+/* ---------- canvas ---------- */
+.stApp {
+  background:
+    radial-gradient(1100px 600px at 8% -12%, rgba(143, 125, 255, .30), transparent 60%),
+    radial-gradient(900px 520px at 105% 8%, rgba(47, 227, 197, .17), transparent 60%),
+    radial-gradient(900px 700px at 50% 115%, rgba(79, 169, 255, .16), transparent 60%),
+    linear-gradient(rgba(130, 160, 255, .045) 1px, transparent 1px) 0 0 / 56px 56px,
+    linear-gradient(90deg, rgba(130, 160, 255, .045) 1px, transparent 1px) 0 0 / 56px 56px,
+    var(--ttd-bg);
+  background-attachment: fixed;
+}
+.stApp :is(p, li, label, input, textarea, button, h1, h2, h3, summary) { font-family: "Inter", "Segoe UI", system-ui, sans-serif; }
+.stApp :is(code, pre, pre *) { font-family: "JetBrains Mono", Consolas, monospace !important; }
+[data-testid="stHeader"] { background: transparent; }
+.stAppDeployButton { display: none; }
+[data-testid="stMainBlockContainer"] { max-width: 860px; padding-top: 2.2rem; padding-bottom: 8rem; }
+
+/* ---------- hero with 3D orb ---------- */
+.ttd-hero {
+  position: relative; overflow: hidden; display: flex; gap: 24px; align-items: center;
+  padding: 24px 26px; border-radius: 24px; margin-bottom: 6px;
+  background: linear-gradient(135deg, rgba(30, 44, 78, .78), rgba(10, 18, 36, .6));
+  border: 1px solid var(--ttd-line);
+  box-shadow: 0 34px 70px -30px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .07);
+}
+.ttd-hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .07) 50%, transparent 65%);
+  transform: translateX(-100%); animation: ttd-sheen 7s ease-in-out infinite;
+}
+.ttd-orb { position: relative; width: 104px; height: 104px; flex: none; }
+.ttd-orb .core {
+  position: absolute; inset: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #ffffff 0, #c4f7ff 7%, #4fa9ff 30%, #6b4dff 64%, #18113f 100%);
+  box-shadow: 0 0 28px rgba(79, 169, 255, .85), 0 0 80px rgba(143, 125, 255, .55), inset -8px -10px 18px rgba(0, 0, 0, .45);
+  animation: ttd-breathe 3.4s ease-in-out infinite;
+}
+.ttd-orb i {
+  position: absolute; inset: 6px; border-radius: 50%;
+  border: 2px solid var(--ttd-teal); border-top-color: transparent; border-bottom-color: rgba(47, 227, 197, .25);
+  box-shadow: 0 0 14px rgba(47, 227, 197, .45);
+}
+.ttd-orb i:nth-child(1) { animation: ttd-spin-a 5.5s linear infinite; }
+.ttd-orb i:nth-child(2) { inset: 0; border-color: var(--ttd-violet); border-left-color: transparent;
+  box-shadow: 0 0 14px rgba(143, 125, 255, .5); animation: ttd-spin-b 8s linear infinite; }
+.ttd-orb i:nth-child(3) { inset: 12px; border-color: var(--ttd-blue); border-right-color: transparent;
+  box-shadow: 0 0 14px rgba(79, 169, 255, .5); animation: ttd-spin-c 11s linear infinite; }
+.ttd-hero-copy { min-width: 0; }
+.ttd-chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 11px; border-radius: 99px;
+  font: 500 11.5px "JetBrains Mono", Consolas, monospace; letter-spacing: .05em; color: var(--ttd-teal);
+  background: rgba(47, 227, 197, .08); border: 1px solid rgba(47, 227, 197, .3); max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ttd-chip .dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--ttd-teal); animation: ttd-pulse 2s infinite; }
+.ttd-title {
+  font: 700 40px/1.05 "Space Grotesk", "Segoe UI", sans-serif; letter-spacing: -.035em; margin: 10px 0 6px;
+  background: linear-gradient(120deg, #ffffff 25%, #b9c8ff 55%, var(--ttd-teal) 85%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.ttd-title span { background: linear-gradient(120deg, var(--ttd-teal), var(--ttd-blue)); -webkit-background-clip: text; background-clip: text; }
+.ttd-sub { color: #c3cde6; font-size: 15px; line-height: 1.55; max-width: 56ch; }
+.ttd-stats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.ttd-stats span {
+  font: 500 11px "JetBrains Mono", Consolas, monospace; color: var(--ttd-muted); padding: 3px 9px;
+  border-radius: 8px; border: 1px solid var(--ttd-line); background: rgba(255, 255, 255, .03);
+}
+
+/* ---------- chat bubbles ---------- */
+[data-testid="stChatMessage"] {
+  background: var(--ttd-glass); border: 1px solid var(--ttd-line); border-radius: 20px; padding: 16px 18px;
+  backdrop-filter: blur(12px); margin-bottom: 4px;
+  box-shadow: 0 20px 44px -24px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .05);
+  animation: ttd-rise .55s cubic-bezier(.2, .8, .2, 1) both;
+}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+  flex-direction: row-reverse; margin-left: 14%;
+  background: linear-gradient(135deg, rgba(79, 169, 255, .24), rgba(143, 125, 255, .22));
+  border-color: rgba(143, 125, 255, .38);
+}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="stChatMessageContent"] { text-align: right; }
+[data-testid="stChatMessageAvatarAssistant"], [data-testid="stChatMessageAvatarUser"] {
+  width: 36px; height: 36px; border-radius: 12px; color: #041019;
+}
+[data-testid="stChatMessageAvatarAssistant"] {
+  background: radial-gradient(circle at 32% 28%, #fff 0, #c4f7ff 10%, var(--ttd-blue) 40%, #6b4dff 100%);
+  box-shadow: 0 0 18px rgba(79, 169, 255, .7);
+}
+[data-testid="stChatMessageAvatarUser"] {
+  background: linear-gradient(135deg, var(--ttd-teal), var(--ttd-blue)); box-shadow: 0 0 16px rgba(47, 227, 197, .5);
+}
+[data-testid="stChatMessageContent"] p, [data-testid="stChatMessageContent"] li { font-size: 15.5px; line-height: 1.65; color: var(--ttd-text); }
+
+/* ---------- typing indicator ---------- */
+.ttd-typing { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 4px 0; }
+.ttd-typing small { flex-basis: 100%; color: var(--ttd-muted); font: 500 12px "JetBrains Mono", Consolas, monospace; }
+.ttd-mini-orb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fff 0, #c4f7ff 8%, var(--ttd-blue) 38%, #6b4dff 100%);
+  box-shadow: 0 0 16px rgba(79, 169, 255, .8); animation: ttd-breathe 1.4s ease-in-out infinite;
+}
+.ttd-shimmer {
+  font: 600 15px "Space Grotesk", sans-serif;
+  background: linear-gradient(90deg, var(--ttd-muted) 0%, #ffffff 50%, var(--ttd-muted) 100%) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: ttd-shimmer 1.8s linear infinite;
+}
+.ttd-dots { display: inline-flex; gap: 4px; }
+.ttd-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--ttd-teal); animation: ttd-bounce 1.2s infinite ease-in-out; }
+.ttd-dots i:nth-child(2) { animation-delay: .15s; background: var(--ttd-blue); }
+.ttd-dots i:nth-child(3) { animation-delay: .3s; background: var(--ttd-violet); }
+
+/* ---------- sample question cards ---------- */
+.st-key-samples { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; perspective: 1000px; }
+.st-key-samples > div { width: 100% !important; }
+.st-key-samples button {
+  min-height: 64px; justify-content: flex-start; text-align: left; padding: 12px 16px; border-radius: 16px;
+  background: linear-gradient(145deg, rgba(28, 42, 72, .7), rgba(12, 20, 38, .6)); border: 1px solid var(--ttd-line);
+  box-shadow: 0 14px 30px -20px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .05);
+  transition: transform .3s cubic-bezier(.2, .8, .2, 1), border-color .3s, box-shadow .3s;
+}
+.st-key-samples button > div { justify-content: flex-start; width: 100%; }
+.st-key-samples button p { white-space: normal; text-align: left; font-size: 14px; color: #d6ddf1; }
+.st-key-samples button::before { content: "✦"; margin-right: 10px; color: var(--ttd-teal); text-shadow: 0 0 10px var(--ttd-teal); }
+.st-key-samples button:hover {
+  transform: perspective(700px) rotateX(6deg) translateY(-3px); border-color: var(--ttd-line-hi);
+  box-shadow: 0 22px 40px -18px rgba(79, 169, 255, .45), inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+.ttd-try { font: 600 11px "JetBrains Mono", Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--ttd-violet); margin: 8px 0 2px; }
+
+/* ---------- answer parts ---------- */
+[data-testid="stExpander"] details { border-radius: 14px; border-color: var(--ttd-line); background: rgba(255, 255, 255, .025); }
+[data-testid="stExpander"] summary:hover { color: var(--ttd-teal); }
+[data-testid="stPlotlyChart"] { border-radius: 16px; border: 1px solid var(--ttd-line); background: rgba(5, 9, 18, .45); padding: 6px; }
+[data-testid="stMetric"] {
+  padding: 16px 20px; border-radius: 16px; border: 1px solid var(--ttd-line);
+  background: linear-gradient(135deg, rgba(47, 227, 197, .1), rgba(143, 125, 255, .08));
+}
+[data-testid="stMetricValue"] { font-family: "Space Grotesk", sans-serif; font-weight: 700; color: var(--ttd-teal); text-shadow: 0 0 24px rgba(47, 227, 197, .4); }
+[data-testid="stCode"] pre { border-radius: 12px; border: 1px solid var(--ttd-line); background: #070d1a !important; }
+
+/* ---------- buttons, sidebar, input ---------- */
+.stButton button, .stDownloadButton button { border-radius: 12px; border-color: var(--ttd-line); transition: .25s; }
+.stButton button:hover, .stDownloadButton button:hover { border-color: var(--ttd-teal); color: var(--ttd-teal); box-shadow: 0 0 20px -6px rgba(47, 227, 197, .6); }
+[data-testid="stSidebar"] { background: rgba(7, 12, 24, .88); border-right: 1px solid var(--ttd-line); backdrop-filter: blur(16px); }
+[data-testid="stBottom"] > div, [data-testid="stBottomBlockContainer"] { background: transparent; }
+[data-testid="stBottom"] { background: linear-gradient(transparent, rgba(5, 9, 18, .92) 35%); }
+[data-testid="stChatInput"] {
+  border-radius: 18px; background: rgba(12, 20, 38, .92); border-color: var(--ttd-line-hi);
+  box-shadow: 0 0 0 1px rgba(130, 160, 255, .2), 0 0 34px -8px rgba(47, 227, 197, .5);
+  transition: box-shadow .3s;
+}
+[data-testid="stChatInput"]:focus-within { box-shadow: 0 0 0 1.5px var(--ttd-teal), 0 0 44px -4px rgba(47, 227, 197, .65); }
+[data-testid="stChatInputSubmitButton"] { border-radius: 12px; background: linear-gradient(135deg, var(--ttd-teal), var(--ttd-blue)); color: #041019; }
+
+/* ---------- motion ---------- */
+@keyframes ttd-spin-a { from { transform: perspective(420px) rotateX(72deg) rotateZ(0); } to { transform: perspective(420px) rotateX(72deg) rotateZ(360deg); } }
+@keyframes ttd-spin-b { from { transform: perspective(420px) rotateY(66deg) rotateZ(0); } to { transform: perspective(420px) rotateY(66deg) rotateZ(-360deg); } }
+@keyframes ttd-spin-c { from { transform: perspective(420px) rotateX(40deg) rotateY(-40deg) rotateZ(0); } to { transform: perspective(420px) rotateX(40deg) rotateY(-40deg) rotateZ(360deg); } }
+@keyframes ttd-breathe { 50% { transform: scale(1.07); filter: brightness(1.15); } }
+@keyframes ttd-pulse { 0% { box-shadow: 0 0 0 0 rgba(47, 227, 197, .7); } 70%, 100% { box-shadow: 0 0 0 8px rgba(47, 227, 197, 0); } }
+@keyframes ttd-sheen { 0%, 60% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+@keyframes ttd-rise { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+@keyframes ttd-shimmer { to { background-position: -200% 0; } }
+@keyframes ttd-bounce { 0%, 80%, 100% { transform: translateY(0); opacity: .5; } 40% { transform: translateY(-6px); opacity: 1; } }
+
+/* ---------- small screens ---------- */
+@media (max-width: 640px) {
+  .ttd-hero { flex-direction: column; align-items: flex-start; gap: 14px; padding: 20px; }
+  .ttd-orb { width: 78px; height: 78px; }
+  .ttd-orb .core { inset: 16px; }
+  .ttd-title { font-size: 32px; }
+  .st-key-samples { grid-template-columns: 1fr; }
+  [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) { margin-left: 6%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stApp *, .stApp *::before, .stApp *::after { animation: none !important; transition: none !important; }
+}

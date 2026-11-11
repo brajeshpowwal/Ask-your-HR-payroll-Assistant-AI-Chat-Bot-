@@ -1,15 +1,10 @@
-# No fixed base: the app follows the viewer's light/dark setting.
-[theme.light]
-primaryColor = "#1F6F5C"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F1F5F3"
-textColor = "#1B2420"
-
-[theme.dark]
-primaryColor = "#4FC3A1"
-backgroundColor = "#111816"
-secondaryBackgroundColor = "#1B2522"
-textColor = "#E4ECE8"
+# One deliberate dark "night console" look; app/style.css adds the glass and glow on top.
+[theme]
+base = "dark"
+primaryColor = "#2FE3C5"
+backgroundColor = "#050912"
+secondaryBackgroundColor = "#101A2E"
+textColor = "#E9EEFB"
 
 [server]
 headless = true

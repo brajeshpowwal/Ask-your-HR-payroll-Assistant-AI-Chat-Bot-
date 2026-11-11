@@ -36,3 +36,36 @@ def test_samples_move_to_sidebar_once_chat_has_messages():
     assert not at.exception
     assert SAMPLE not in _labels(at.main.button)
     assert SAMPLE in _labels(at.sidebar.button)
+
+
+def test_page_has_hero_style_and_greeting():
+    at = AppTest.from_file(APP, default_timeout=60).run()
+    assert not at.exception
+    html = "\n".join(m.value for m in at.markdown)
+    assert "ttd-hero" in html and "<style>" in html
+    assert len(at.chat_message) == 1  # the assistant greets a new visitor
+    assert "data assistant" in at.chat_message[0].markdown[0].value
+
+
+def test_hero_escapes_the_typed_model_name():
+    """The model name is free text from the sidebar; it must never reach the page as HTML."""
+    at = AppTest.from_file(APP, default_timeout=60).run()
+    at.sidebar.text_input[0].set_value("<img src=x onerror=alert(1)>").run()
+    html = "\n".join(m.value for m in at.markdown)
+    assert "<img src=x" not in html and "&lt;img src=x" in html
+
+
+def test_word_stream_rebuilds_the_answer_exactly():
+    from app.ui import word_stream
+    text = "Brightwave: 168  \nCedarline:  143\n\n- one"
+    assert "".join(word_stream(text, delay_s=0)) == text
+
+
+def test_charts_get_the_neon_look():
+    import pandas as pd
+    import plotly.express as px
+
+    from app.ui import style_figure
+    fig = style_figure(px.bar(pd.DataFrame({"company": ["A", "B"], "n": [3, 5]}), x="company", y="n"))
+    assert fig.layout.paper_bgcolor == "rgba(0,0,0,0)" and fig.layout.barcornerradius == 8
+    assert list(fig.data[0].marker.color) == [3, 5]  # bars shaded by value

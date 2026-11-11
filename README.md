@@ -27,9 +27,10 @@ Business teams wait days for simple data answers because only analysts can write
 - **Business glossary** so "attrition", "headcount", "open exception" follow company definitions
 - **Follow-up questions** ("now only for Cedarline Health") using conversation history
 - **Auto charts**: KPI card, line chart for trends, bar chart for comparisons; CSV download
+- **Chat-style interface**: animated assistant header, typing indicator while it works, answers typed out word by word, sample-question cards, dark "night console" theme
 - **Swap the LLM with one setting**: Groq, Gemini, Ollama (local), Claude, NVIDIA
 - **Evaluation**: execution accuracy on 50 questions (easy / medium / hard)
-- **68 automated tests** run on every push with GitHub Actions
+- **72 automated tests** run on every push with GitHub Actions
 
 ## How it works
 
@@ -126,7 +127,7 @@ Results on the 50 questions (November 2026, NVIDIA free tier, thinking off):
 │   └── config.py            settings from .env
 ├── data/                    generator, schema docs, glossary, examples
 ├── eval/                    50 test questions + accuracy runner
-├── tests/                   68 pytest tests (no API key needed)
+├── tests/                   72 pytest tests (no API key needed)
 └── docs/                    how-to, interview guide, LinkedIn kit
 ```
 

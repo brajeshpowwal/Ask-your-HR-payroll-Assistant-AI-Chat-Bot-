@@ -22,6 +22,7 @@ try:
 except Exception:  # no secrets file locally, that's fine
     pass
 
+from app.ui import TYPING_HTML, hero_html, page_style, style_figure, word_stream  # noqa: E402
 from src.agent import AgentResult, SQLAgent  # noqa: E402
 from src.charts import choose_chart  # noqa: E402
 from src.config import DEFAULT_MODELS, get_settings  # noqa: E402
@@ -37,7 +38,7 @@ SAMPLE_QUESTIONS = [
     "Which department has the highest absenteeism rate?",
 ]
 
-st.set_page_config(page_title="TalkToData · HR & payroll assistant", page_icon="💬", layout="centered")
+st.set_page_config(page_title="TalkToData · HR & payroll assistant", page_icon="🤖", layout="centered")
 
 
 # ------------------------------------------------------------------ setup
@@ -94,21 +95,31 @@ with st.sidebar:
             st.write(f"`{table}` · {n:,} rows")
 
 # ------------------------------------------------------------------- main
-st.title("Ask your HR & payroll data")
-st.caption("Type a question in plain English. The assistant writes safe, read-only SQL, "
-           "runs it, and explains the answer. You can always see the SQL it used.")
+counts = table_counts(str(db_path))
+st.markdown(page_style(), unsafe_allow_html=True)
+st.markdown(hero_html(model, len(counts), sum(n for _, n in counts)), unsafe_allow_html=True)
 
-if not state.messages:
+with st.chat_message("assistant"):  # the greeting opens every conversation, like a real assistant
+    st.markdown("Hi! I'm your HR & payroll data assistant. Ask me about headcount, payroll, attrition, "
+                "exceptions, attendance or reviews for the four demo companies. I only read data, never change it.")
+
+if not state.messages and not state.get("pending"):
     # Phones collapse the sidebar, so new visitors get the samples on the page.
-    st.markdown("**Try one of these questions**")
-    for q in SAMPLE_QUESTIONS:  # one column: two columns cut the longer questions short
-        if st.button(q, width="stretch", key=f"main-{q}"):
-            state.pending = q
+    st.markdown('<div class="ttd-try">Try one of these</div>', unsafe_allow_html=True)
+    with st.container(key="samples"):  # CSS lays these out as a card grid; labels wrap instead of being cut
+        for q in SAMPLE_QUESTIONS:
+            if st.button(q, width="stretch", key=f"main-{q}"):
+                state.pending = q
+                st.rerun()  # redraw without the cards, so the chat starts right under the greeting
 
 
-def render_result(msg: dict) -> None:
+def render_result(msg: dict, stream: bool = False) -> None:
     # Two trailing spaces make Markdown keep the model's single line breaks (lists per company etc.).
-    st.markdown(msg["answer"].replace("\n", "  \n"))
+    text = msg["answer"].replace("\n", "  \n")
+    if stream:  # only a fresh answer is typed out; history redraws instantly
+        st.write_stream(word_stream(text))
+    else:
+        st.markdown(text)
     df = msg.get("data")
     if msg.get("status") != "ok" or df is None:
         return
@@ -116,8 +127,8 @@ def render_result(msg: dict) -> None:
     if chart.kind == "kpi":
         st.metric(chart.kpi_label, chart.kpi_value)
     elif chart.figure is not None:
-        st.plotly_chart(chart.figure, width="stretch", key=f"chart-{msg['id']}")
-    if not (chart.kind == "kpi"):
+        st.plotly_chart(style_figure(chart.figure), width="stretch", theme=None, key=f"chart-{msg['id']}")
+    if chart.kind != "kpi":
         with st.expander(f"Data · {len(df):,} rows", expanded=chart.kind == "none"):
             st.dataframe(df, width="stretch", hide_index=True)
             st.download_button("Download CSV", df.to_csv(index=False), "result.csv", "text/csv",
@@ -138,7 +149,7 @@ for msg in state.messages:
         else:
             render_result(msg)
 
-question = st.chat_input("e.g. What was total overtime by department in 2026?")
+question = st.chat_input("Ask about your HR & payroll data…")
 if state.get("pending"):
     question, state.pending = state.pending, None
 
@@ -160,17 +171,19 @@ if question:
     history = [{"question": m["question"], "sql": m.get("sql", "")}
                for m in state.messages if m["role"] == "assistant" and m.get("status") == "ok"]
     with st.chat_message("assistant"):
-        with st.spinner("Writing and checking the query…"):
-            try:
-                result: AgentResult = agent.ask(question, history=history)
-            except Exception as exc:  # provider outage, rate limit, bad model name…
-                result = AgentResult(question=question, status="failed",
-                                     answer=f"The model call failed: {exc}. Check the model name and API key, "
-                                            "or try again in a minute (free tiers have rate limits).")
+        typing = st.empty()
+        typing.markdown(TYPING_HTML, unsafe_allow_html=True)
+        try:
+            result: AgentResult = agent.ask(question, history=history)
+        except Exception as exc:  # provider outage, rate limit, bad model name…
+            result = AgentResult(question=question, status="failed",
+                                 answer=f"The model call failed: {exc}. Check the model name and API key, "
+                                        "or try again in a minute (free tiers have rate limits).")
+        typing.empty()
         msg = {"role": "assistant", "id": len(state.messages), "question": question,
                "answer": result.answer, "status": result.status, "sql": result.sql,
                "data": result.data, "steps": result.steps, "attempts": result.attempts,
                "llm_calls": result.llm_calls, "seconds": result.seconds}
-        render_result(msg)
+        render_result(msg, stream=True)
     state.messages.append(msg)
     state.asked += 1

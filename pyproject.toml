@@ -13,5 +13,6 @@ select = ["E", "F", "W", "I", "B", "UP"]
 python_version = "3.11"
 files = ["src", "app", "eval", "data", "tests"]
 ignore_missing_imports = true
+explicit_package_bases = true  # app/ has no __init__.py; resolve it as the "app" package from the repo root
 warn_unused_ignores = true
 warn_redundant_casts = true
