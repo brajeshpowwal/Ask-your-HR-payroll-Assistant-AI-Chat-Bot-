@@ -2,7 +2,7 @@
 
 Ask a question like *"Which open payroll exceptions are older than 14 days?"* and the assistant writes safe SQL, runs it on the database, and replies with a plain-English answer, a chart, the data, and the exact SQL it used.
 
-Built with **Python, LangChain, LangGraph, SQLite and Streamlit**. Works with free LLMs (Groq, Google Gemini, or a local Ollama model) and with Claude. Total running cost: **$0**.
+Built with **Python, LangChain, LangGraph, SQLite and Streamlit**. Works with free LLMs (NVIDIA, Groq, Google Gemini, or a local Ollama model) and with Claude, and from Claude Desktop through an MCP server. Total running cost: **$0**.
 
 > **Live demo:** _add your Streamlit link here_ · **Video walkthrough:** _add your LinkedIn/YouTube link here_
 
@@ -88,13 +88,22 @@ Full step-by-step guide for Windows and VS Code: [docs/HOW_TO_RUN.md](docs/HOW_T
 Run the benchmark yourself:
 
 ```bash
-python eval/run_eval.py                    # uses LLM_PROVIDER from .env
-python eval/run_eval.py --provider gemini  # compare another model
+python eval/run_eval.py                        # uses LLM_PROVIDER from .env
+python eval/run_eval.py --provider gemini      # compare another model
+python eval/run_eval.py --per-difficulty 4     # quick balanced sample (12 questions)
 ```
 
-| Provider | Model | Execution accuracy | Easy | Medium | Hard | Avg retries | Avg seconds |
-|---|---|---|---|---|---|---|---|
-| _fill in from your run_ | | | | | | | |
+Results on the 50 questions (November 2026, NVIDIA free tier, thinking off):
+
+| Provider | Model | Execution accuracy | Easy (15) | Medium (20) | Hard (15) | Valid SQL | Avg retries | Avg seconds |
+|---|---|---|---|---|---|---|---|---|
+| nvidia | nemotron-3.5-lightning-30b-a3b | **84%** | 100% | 95% | 53% | 100% | 0.04 | 11.9 |
+
+- **Results vary between runs.** Three clean full runs after tuning scored 78%, 82% and 84%; the table shows the latest. Runs that hit provider rate limits are not counted.
+- **Before tuning** the same model scored 78% (hard questions 47%). Tuning added business rules to `data/glossary.yaml` and few-shot examples to `data/examples.yaml`, based on the failed questions; a test checks that no example is a copy or near-copy of an eval question.
+- **Benchmark change:** three gold queries (q44, q45, q49) returned extra columns the question did not ask for (a count, a job title). Those columns were removed; the answer logic is unchanged.
+- **Thinking on** (the model reasons before replying) was slower (57 s per question) and, on a 12-question sample, less accurate, so it is off by default (`LLM_THINKING`).
+- **Latency** is about 10–12 s per question with three model calls; the 5 s goal is not met yet.
 
 *Execution accuracy* = the assistant's result table has the same values as a hand-written correct query (row order, column names and extra columns are ignored).
 

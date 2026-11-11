@@ -46,7 +46,7 @@ flowchart LR
 | 5. Ship | Eval, CI, README, deploy | 80%+ accuracy, public link works |
 | 6. Stretch | MCP server, Postgres/Azure SQL, role-based columns, caching | Pick 1–2 that match target roles |
 
-**Status:** phases 0–4 are implemented in this repo. Phase 5 needs your API key run of the benchmark, the deploy, and the README numbers.
+**Status (Nov 2026):** phases 0–4 done and verified; phase 5: benchmark run and tuned (78–84% across clean runs, see README), CI runs lint + type-check + tests; GitHub publish and public deploy still to do. Phase 6: MCP server done.
 
 ## Risks and how they are handled
 

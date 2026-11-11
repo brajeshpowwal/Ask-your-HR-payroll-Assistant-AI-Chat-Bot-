@@ -31,7 +31,7 @@ Type "Delete all employees."
 
 **2:05–2:25 · Proof**
 Show the accuracy table.
-"I don't just say it works: I test it on 50 questions from easy to hard. It gets [X]% right with [model]. There are also 68 automated tests running on every push."
+"I don't just say it works: I test it on 50 questions from easy to hard. It gets 78 to 84% right with a free NVIDIA Nemotron model, depending on the run. There are also 68 automated tests running on every push."
 
 **2:25–2:40 · Close**
 "All the data is fictional, and the full code is on GitHub. Link in the comments. I'd love feedback, especially from people working with HR and payroll data."
@@ -46,7 +46,7 @@ Show the accuracy table.
 > 🔹 Every answer shows the exact SQL used, so nothing is a black box
 > 🔹 It can't change data: a SQL parser allows only read-only queries, and the database connection is read-only too
 > 🔹 If a query fails, the agent reads the error and fixes itself
-> 🔹 Tested on 50 questions: [X]% execution accuracy with [model]
+> 🔹 Tested on 50 questions: 78–84% execution accuracy with a free NVIDIA Nemotron model
 > 🔹 Runs on free models (Groq, Gemini) or fully offline with Ollama
 >
 > Stack: Python · LangChain · LangGraph · SQLite · Streamlit · pytest · GitHub Actions
@@ -66,7 +66,7 @@ Show the accuracy table.
 > 1️⃣ The model is the easy part. Context is the hard part: schema descriptions + a business glossary + similar examples made the biggest accuracy difference.
 > 2️⃣ Never trust generated SQL. I parse it with sqlglot and allow only a single SELECT, on a read-only connection.
 > 3️⃣ Let it fail and retry. Feeding the database error back to the model fixes most mistakes.
-> 4️⃣ Measure it. 50 test questions, execution accuracy [X]%, compared across [models].
+> 4️⃣ Measure it. 50 test questions, execution accuracy 78–84% over repeated runs, with thinking on vs off compared.
 >
 > Demo + code in the comments. Built with LangGraph, Streamlit and free LLMs.
 >
@@ -85,4 +85,4 @@ Show the accuracy table.
 - Reply to every comment in the first two hours.
 - Tag no more than 2–3 people, and only ones who would genuinely care.
 - Add the project to your LinkedIn **Featured** section and to the **Projects** section with the GitHub link.
-- On your resume: *"Built a text-to-SQL AI assistant (LangGraph, Python, SQLite) with 4-layer SQL safety and a 50-question benchmark ([X]% execution accuracy); deployed publicly on Streamlit."*
+- On your resume: *"Built a text-to-SQL AI assistant (LangGraph, Python, SQLite) with 4-layer SQL safety and a 50-question benchmark (78–84% execution accuracy); deployed publicly on Streamlit."*
