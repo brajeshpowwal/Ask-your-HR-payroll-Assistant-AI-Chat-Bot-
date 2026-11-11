@@ -1,5 +1,7 @@
 # TalkToData: chat with your HR & payroll data in plain English
 
+[![tests](https://github.com/brajeshpowwal/Ask-your-HR-payroll-Assistant-AI-Chat-Bot-/actions/workflows/ci.yml/badge.svg)](https://github.com/brajeshpowwal/Ask-your-HR-payroll-Assistant-AI-Chat-Bot-/actions/workflows/ci.yml)
+
 Ask a question like *"Which open payroll exceptions are older than 14 days?"* and the assistant writes safe SQL, runs it on the database, and replies with a plain-English answer, a chart, the data, and the exact SQL it used.
 
 Built with **Python, LangChain, LangGraph, SQLite and Streamlit**. Works with free LLMs (NVIDIA, Groq, Google Gemini, or a local Ollama model) and with Claude, and from Claude Desktop through an MCP server. Total running cost: **$0**.
@@ -70,13 +72,13 @@ The data has realistic problems planted in it (duplicate payments, overtime spik
 ## Quick start
 
 ```bash
-git clone https://github.com/<your-username>/talk-to-data-sql-assistant.git
-cd talk-to-data-sql-assistant
+git clone https://github.com/brajeshpowwal/Ask-your-HR-payroll-Assistant-AI-Chat-Bot-.git
+cd Ask-your-HR-payroll-Assistant-AI-Chat-Bot-
 python -m venv .venv
 # Windows: .venv\Scripts\activate     macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 copy .env.example .env               # macOS/Linux: cp .env.example .env
-# open .env and paste your free GROQ_API_KEY (https://console.groq.com)
+# open .env, set LLM_PROVIDER and paste a free key (NVIDIA: https://build.nvidia.com, Groq: https://console.groq.com)
 python data/generate_data.py
 streamlit run app/streamlit_app.py
 ```
@@ -153,8 +155,8 @@ Then add this to Claude Desktop's config (**Settings → Developer → Edit Conf
 {
   "mcpServers": {
     "talktodata": {
-      "command": "C:\\path\\to\\talk-to-data-sql-assistant\\.venv\\Scripts\\python.exe",
-      "args": ["C:\\path\\to\\talk-to-data-sql-assistant\\src\\mcp_server.py"]
+      "command": "C:\\path\\to\\Ask-your-HR-payroll-Assistant-AI-Chat-Bot-\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\path\\to\\Ask-your-HR-payroll-Assistant-AI-Chat-Bot-\\src\\mcp_server.py"]
     }
   }
 }
@@ -166,7 +168,7 @@ On macOS/Linux use `.venv/bin/python` and forward slashes. Ask Claude something 
 
 1. Push this repo to GitHub.
 2. Go to [share.streamlit.io](https://share.streamlit.io), choose the repo, main file `app/streamlit_app.py`.
-3. In **Advanced settings → Secrets**, add `GROQ_API_KEY = "..."` and `LLM_PROVIDER = "groq"`.
+3. In **Advanced settings**, pick Python 3.11 or newer. Under **Secrets**, add `LLM_PROVIDER = "nvidia"` and `NVIDIA_API_KEY = "nvapi-..."` (or `LLM_PROVIDER = "groq"` with `GROQ_API_KEY`). Secrets never go in the repo.
 4. Deploy. The database is generated automatically on first start.
 
 ## What I'd build next
