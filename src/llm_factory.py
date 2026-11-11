@@ -26,6 +26,15 @@ def missing_api_key(settings: Settings) -> str | None:
     return None
 
 
+RETIRED_MODEL_MARKERS = ("[410]", "410 gone", "end of life", "decommissioned", "deprecated and removed")
+
+
+def is_retired_model_error(exc: Exception) -> bool:
+    """True when the provider says the model no longer exists, so switching model (not retrying) helps."""
+    text = str(exc).lower()
+    return any(marker in text for marker in RETIRED_MODEL_MARKERS)
+
+
 def nvidia_model_kwargs(settings: Settings) -> dict:
     """Extra request fields for NVIDIA; thinking is switched off via the chat template."""
     if settings.thinking:

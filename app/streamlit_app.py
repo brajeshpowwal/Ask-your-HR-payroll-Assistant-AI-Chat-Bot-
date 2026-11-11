@@ -27,7 +27,7 @@ from src.agent import AgentResult, SQLAgent  # noqa: E402
 from src.charts import choose_chart  # noqa: E402
 from src.config import DEFAULT_MODELS, get_settings  # noqa: E402
 from src.db import ensure_database, run_query  # noqa: E402
-from src.llm_factory import LLMConfigError, get_llm  # noqa: E402
+from src.llm_factory import LLMConfigError, get_llm, is_retired_model_error  # noqa: E402
 
 SAMPLE_QUESTIONS = [
     "How many active employees does each company have?",
@@ -97,7 +97,8 @@ with st.sidebar:
 # ------------------------------------------------------------------- main
 counts = table_counts(str(db_path))
 st.markdown(page_style(), unsafe_allow_html=True)
-st.markdown(hero_html(model, len(counts), sum(n for _, n in counts)), unsafe_allow_html=True)
+model_in_use = state.get("fallback_for", {}).get(model, model)
+st.markdown(hero_html(model_in_use, len(counts), sum(n for _, n in counts)), unsafe_allow_html=True)
 
 with st.chat_message("assistant"):  # the greeting opens every conversation, like a real assistant
     st.markdown("Hi! I'm your HR & payroll data assistant. Ask me about headcount, payroll, attrition, "
@@ -120,6 +121,8 @@ def render_result(msg: dict, stream: bool = False) -> None:
         st.write_stream(word_stream(text))
     else:
         st.markdown(text)
+    if msg.get("notice"):
+        st.caption(msg["notice"])
     df = msg.get("data")
     if msg.get("status") != "ok" or df is None:
         return
@@ -142,6 +145,24 @@ def render_result(msg: dict, stream: bool = False) -> None:
                    f"{msg.get('seconds', 0)} s")
 
 
+def ask_agent(agent: SQLAgent, question: str, history: list[dict]) -> tuple[AgentResult, str]:
+    """Ask the agent. If the provider has retired the chosen model, answer once more with the default model.
+
+    Providers retire models without notice (NVIDIA returns 410 Gone); a stale LLM_MODEL in the
+    deployment settings must not break the demo. Returns the result and a note for the user ("" if none).
+    """
+    try:
+        return agent.ask(question, history=history), ""
+    except Exception as exc:
+        fallback = DEFAULT_MODELS.get(provider, "")
+        if not (is_retired_model_error(exc) and fallback and fallback != agent.settings.model_name):
+            raise
+    state.setdefault("fallback_for", {})[model] = fallback
+    note = (f"The model `{agent.settings.model_name}` has been retired by the provider, so this answer used "
+            f"`{fallback}`. Remove LLM_MODEL from the app settings to make this permanent.")
+    return load_agent(provider, fallback).ask(question, history=history), note
+
+
 for msg in state.messages:
     with st.chat_message(msg["role"]):
         if msg["role"] == "user":
@@ -158,8 +179,8 @@ if question:
         st.warning("You've reached the demo limit for this session. "
                    "Clear the chat or run it locally for unlimited use.")
         st.stop()
-    try:
-        agent = load_agent(provider, model)
+    try:  # a model already found retired this session goes straight to its replacement
+        agent = load_agent(provider, state.get("fallback_for", {}).get(model, model))
     except LLMConfigError as exc:
         st.error(f"The model isn't set up yet: {exc}")
         st.stop()
@@ -173,8 +194,9 @@ if question:
     with st.chat_message("assistant"):
         typing = st.empty()
         typing.markdown(TYPING_HTML, unsafe_allow_html=True)
+        notice = ""
         try:
-            result: AgentResult = agent.ask(question, history=history)
+            result, notice = ask_agent(agent, question, history)
         except Exception as exc:  # provider outage, rate limit, bad model name…
             result = AgentResult(question=question, status="failed",
                                  answer=f"The model call failed: {exc}. Check the model name and API key, "
@@ -183,7 +205,7 @@ if question:
         msg = {"role": "assistant", "id": len(state.messages), "question": question,
                "answer": result.answer, "status": result.status, "sql": result.sql,
                "data": result.data, "steps": result.steps, "attempts": result.attempts,
-               "llm_calls": result.llm_calls, "seconds": result.seconds}
+               "llm_calls": result.llm_calls, "seconds": result.seconds, "notice": notice}
         render_result(msg, stream=True)
     state.messages.append(msg)
     state.asked += 1

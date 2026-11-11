@@ -6,7 +6,7 @@ Ask a question like *"Which open payroll exceptions are older than 14 days?"* an
 
 Built with **Python, LangChain, LangGraph, SQLite and Streamlit**. Works with free LLMs (NVIDIA, Groq, Google Gemini, or a local Ollama model) and with Claude, and from Claude Desktop through an MCP server. Total running cost: **$0**.
 
-> **Live demo:** _add your Streamlit link here_ · **Video walkthrough:** _add your LinkedIn/YouTube link here_
+> **Live demo:** [hrpayrollassistant.streamlit.app](https://hrpayrollassistant.streamlit.app/) · **Video walkthrough:** _add your LinkedIn/YouTube link here_
 
 <!-- Add a demo GIF: record 20–30 seconds of the app and save it as docs/demo.gif -->
 <!-- ![Demo](docs/demo.gif) -->

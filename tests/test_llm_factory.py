@@ -31,3 +31,13 @@ def test_nvidia_kwargs_disable_thinking_only_when_off():
 def test_unknown_provider_is_rejected():
     with pytest.raises(LLMConfigError, match="Unknown LLM_PROVIDER"):
         get_llm(get_settings(provider="nope"))
+
+
+def test_retired_model_errors_are_recognised():
+    """Providers retire models (NVIDIA answers 410 Gone); the app then falls back to the default model."""
+    from src.llm_factory import is_retired_model_error
+    gone = Exception("[410] Gone\nThe model 'meta/llama-3.3-70b-instruct' has reached its end of life on 2026-08-26")
+    assert is_retired_model_error(gone)
+    assert is_retired_model_error(Exception("model_decommissioned: this model has been decommissioned"))
+    assert not is_retired_model_error(Exception("[429] Too Many Requests"))
+    assert not is_retired_model_error(Exception("[401] Unauthorized"))
