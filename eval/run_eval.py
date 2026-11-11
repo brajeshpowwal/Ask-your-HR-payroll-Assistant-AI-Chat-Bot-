@@ -109,7 +109,7 @@ def main() -> None:
     df = pd.DataFrame(rows)
     out_dir = ROOT / "eval" / "results"
     out_dir.mkdir(exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d-%H%M")
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     thinking = "thinking-on" if settings.thinking else "thinking-off"
     out = out_dir / f"{settings.provider}_{settings.model_name.replace('/', '-')}_{thinking}_{stamp}.csv"
     df.to_csv(out, index=False)
