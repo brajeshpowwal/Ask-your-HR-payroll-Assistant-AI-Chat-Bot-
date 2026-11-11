@@ -20,7 +20,7 @@ DEFAULT_MODELS = {
     "gemini": "gemini-2.5-flash",
     "ollama": "qwen2.5-coder:7b",
     "anthropic": "claude-sonnet-5-5",
-    "nvidia": "meta/llama-3.3-70b-instruct",
+    "nvidia": "nvidia/nemotron-3.5-lightning-30b-a3b",  # llama-3.3-70b retired 2026-08-26
 }
 
 API_KEY_ENV = {
