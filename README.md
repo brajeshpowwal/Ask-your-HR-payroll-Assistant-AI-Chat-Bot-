@@ -27,7 +27,7 @@ Business teams wait days for simple data answers because only analysts can write
 - **Auto charts**: KPI card, line chart for trends, bar chart for comparisons; CSV download
 - **Swap the LLM with one setting**: Groq, Gemini, Ollama (local), Claude, NVIDIA
 - **Evaluation**: execution accuracy on 50 questions (easy / medium / hard)
-- **42 automated tests** run on every push with GitHub Actions
+- **68 automated tests** run on every push with GitHub Actions
 
 ## How it works
 
@@ -111,10 +111,11 @@ python eval/run_eval.py --provider gemini  # compare another model
 │   ├── prompts.py           all prompt templates
 │   ├── llm_factory.py       Groq / Gemini / Ollama / Claude / NVIDIA
 │   ├── charts.py            picks the right chart
+│   ├── mcp_server.py        read-only MCP tools for Claude Desktop
 │   └── config.py            settings from .env
 ├── data/                    generator, schema docs, glossary, examples
 ├── eval/                    50 test questions + accuracy runner
-├── tests/                   42 pytest tests (no API key needed)
+├── tests/                   68 pytest tests (no API key needed)
 └── docs/                    how-to, interview guide, LinkedIn kit
 ```
 
@@ -129,6 +130,29 @@ python -m pytest    # tests
 
 Tests use a fake LLM with scripted replies, so they are free, fast and need no API key. CI runs all three on Python 3.11 and 3.13.
 
+## Use it from Claude Desktop (MCP server)
+
+`src/mcp_server.py` exposes the database to any MCP client through four read-only tools: `list_tables`, `describe_tables`, `business_rules` and `run_sql`. The client's own model writes the SQL, so no API key is needed, and every query passes the same guard and read-only connection as the chat app.
+
+```bash
+pip install -r requirements-mcp.txt
+```
+
+Then add this to Claude Desktop's config (**Settings → Developer → Edit Config**; on Windows the file is `%APPDATA%\Claude\claude_desktop_config.json`) and restart Claude Desktop:
+
+```json
+{
+  "mcpServers": {
+    "talktodata": {
+      "command": "C:\\path\\to\\talk-to-data-sql-assistant\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\path\\to\\talk-to-data-sql-assistant\\src\\mcp_server.py"]
+    }
+  }
+}
+```
+
+On macOS/Linux use `.venv/bin/python` and forward slashes. Ask Claude something like *"Using talktodata, which department had the most leavers in 2026?"*
+
 ## Deploy for free
 
 1. Push this repo to GitHub.
@@ -138,7 +162,6 @@ Tests use a fake LLM with scripted replies, so they are free, fast and need no A
 
 ## What I'd build next
 
-- MCP server so Claude Desktop can use the same safe SQL tools
 - Role-based access (hide salary columns for some users)
 - PostgreSQL / Azure SQL support
 - Query result caching and cost tracking

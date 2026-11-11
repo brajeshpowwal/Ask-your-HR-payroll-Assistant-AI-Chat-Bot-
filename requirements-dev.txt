@@ -1,5 +1,5 @@
 # Development tools: tests, lint and type-check.  pip install -r requirements-dev.txt
--r requirements.txt
+-r requirements-mcp.txt
 pytest>=8.0
 ruff>=0.15
 mypy>=1.18

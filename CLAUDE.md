@@ -18,4 +18,5 @@ Read `PLAN.md` for the full plan and `docs/INTERVIEW_GUIDE.md` for how everythin
 - `src/sql_guard.py`: SELECT-only, allow-list, LIMIT
 - `src/db.py`: read-only connection, timeout
 - `app/streamlit_app.py`: chat UI
+- `src/mcp_server.py`: read-only MCP tools for Claude Desktop (same guard + db)
 - `eval/run_eval.py`: execution-accuracy benchmark

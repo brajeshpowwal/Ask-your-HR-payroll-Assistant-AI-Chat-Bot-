@@ -95,7 +95,7 @@ def build_answer_prompt(question: str, df: pd.DataFrame, max_rows: int, snapshot
         row_info += f", showing the first {ROWS_SHOWN_TO_MODEL}"
     if len(df) >= max_rows:
         row_info += ", cut off at the row limit"
-    result = df.head(ROWS_SHOWN_TO_MODEL).to_csv(index=False) if not df.empty else "(no rows)"
+    result = df.head(ROWS_SHOWN_TO_MODEL).to_csv(index=False, lineterminator="\n") if not df.empty else "(no rows)"
     return prompts.ANSWER_USER.format(question=question, snapshot=snapshot, row_info=row_info, result=result)
 
 
