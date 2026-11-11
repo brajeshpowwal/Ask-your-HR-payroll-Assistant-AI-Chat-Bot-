@@ -144,6 +144,12 @@ class SQLAgent:
             retry_block=retry_block))
         update: AgentState = {"attempts": attempts + 1, "llm_calls": state.get("llm_calls", 0) + 1}
         steps = state.get("steps", [])
+        if not reply:
+            # Nothing to fix: retrying an empty reply only repeats slow model calls.
+            return {**update, "status": "failed",
+                    "answer": ("The model returned an empty reply, so no query was run. "
+                               "Please rephrase the question. Note that this assistant can only read data."),
+                    "steps": steps + ["Model returned an empty reply"]}
         if reply.upper().startswith("CLARIFY:"):
             return {**update, "status": "clarify", "answer": reply.split(":", 1)[1].strip(),
                     "steps": steps + ["Asked a clarifying question"]}

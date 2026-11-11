@@ -50,6 +50,16 @@ def test_clarify_and_cannot_answer(settings):
     assert res.status == "cannot_answer" and "gender" in res.answer
 
 
+def test_empty_model_reply_stops_without_retries(settings):
+    """An empty reply is not a SQL error to fix; retrying only wastes slow model calls."""
+    agent = make_agent(settings, ['["employees"]', "   ", GOOD_SQL, "should not be used"])
+    res = agent.ask("Delete all employees")
+    assert res.status == "failed"
+    assert res.attempts == 1 and res.llm_calls == 2
+    assert res.sql == "" and res.data is None
+    assert "empty reply" in res.answer
+
+
 def test_bad_table_list_falls_back_to_full_schema(settings):
     agent = make_agent(settings, ["I think you need employees", GOOD_SQL, "ok"])
     res = agent.ask("Active headcount by company?")
