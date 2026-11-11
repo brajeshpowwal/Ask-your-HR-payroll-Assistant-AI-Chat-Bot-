@@ -174,8 +174,10 @@ def generate(out_path: Path | str = DEFAULT_PATH) -> Path:
         out_path.unlink()
 
     companies, departments, employees = [], [], []
-    salaries, payroll, exceptions = [], [], []
-    attendance, reviews, balances = [], [], []
+    salaries, payroll = [], []
+    exceptions: list[tuple] = []  # rows mix None and str in date columns
+    attendance: list[tuple] = []
+    reviews, balances = [], []
     counter = {"emp": 1000, "dept": 0}
 
     # ---------------------------------------------------------------- people
@@ -183,17 +185,19 @@ def generate(out_path: Path | str = DEFAULT_PATH) -> Path:
         companies.append((c_id, cname, industry, hq, founded))
         domain = cname.lower().replace(" ", "") + ".example"
 
+        # new_emp is only called inside this loop iteration, so reading c_id, domain
+        # and hq from the enclosing loop is intended (hence the B023 suppressions).
         def new_emp(dept, title, level, manager, hire, emp_type="Full-time"):
             counter["emp"] += 1
             eid = counter["emp"]
             first, last = fake.first_name(), fake.last_name()
             rec = {
-                "employee_id": eid, "company_id": c_id, "department_id": dept[0],
+                "employee_id": eid, "company_id": c_id, "department_id": dept[0],  # noqa: B023
                 "dept_name": dept[2], "first_name": first, "last_name": last,
-                "email": f"{first}.{last}{eid}@{domain}".lower(),
+                "email": f"{first}.{last}{eid}@{domain}".lower(),  # noqa: B023
                 "job_title": title, "job_level": level, "manager_id": manager,
                 "employment_type": emp_type,
-                "work_state": hq if rng.random() < 0.6 else rng.choice(US_STATES),
+                "work_state": hq if rng.random() < 0.6 else rng.choice(US_STATES),  # noqa: B023
                 "hire_date": hire.isoformat(), "termination_date": None,
                 "termination_reason": None, "status": "Active",
             }

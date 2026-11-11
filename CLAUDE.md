@@ -9,7 +9,7 @@ Read `PLAN.md` for the full plan and `docs/INTERVIEW_GUIDE.md` for how everythin
 - The database must stay read-only. Any new query path must go through `src/sql_guard.py` and `src/db.py`.
 - Python 3.11+, type hints, small functions, docstrings that explain *why*.
 - Keep `data/examples.yaml` and `eval/questions.jsonl` different: never copy eval questions into examples.
-- Run `python -m pytest` before every commit; all tests must pass.
+- Run `ruff check .`, `mypy` and `python -m pytest` before every commit; all must pass.
 
 ## Map
 - `data/generate_data.py`: builds `data/hr_payroll.db` (seeded, repeatable)

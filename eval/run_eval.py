@@ -109,7 +109,8 @@ def main() -> None:
     def pct(series) -> str:
         return f"{100 * series.mean():.0f}%" if len(series) else "-"
 
-    print("\n| Provider | Model | Questions | Execution accuracy | Easy | Medium | Hard | Valid SQL | Avg retries | Avg seconds |")
+    print("\n| Provider | Model | Questions | Execution accuracy | Easy | Medium | Hard "
+          "| Valid SQL | Avg retries | Avg seconds |")
     print("|---|---|---|---|---|---|---|---|---|---|")
     by = {d: df[df.difficulty == d]["correct"] for d in ("easy", "medium", "hard")}
     print(f"| {settings.provider} | {settings.model_name} | {len(df)} | {pct(df.correct)} | {pct(by['easy'])} | "

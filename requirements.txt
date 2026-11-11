@@ -1,4 +1,4 @@
-# Core (tested with Python 3.11 and 3.12)
+# Core (tested with Python 3.11 to 3.13)
 langchain-core>=1.0
 langgraph>=1.0
 sqlglot>=25.0
@@ -15,7 +15,6 @@ langchain-groq>=1.0
 langchain-google-genai>=3.0
 # langchain-ollama>=1.0              # local, fully free (install Ollama first)
 # langchain-anthropic>=1.0           # Claude (paid)
-# langchain-nvidia-ai-endpoints      # NVIDIA NIM
+langchain-nvidia-ai-endpoints>=0.3   # NVIDIA NIM (free credits)
 
-# Development
-pytest>=8.0
+# Development tools (pytest, ruff, mypy) are in requirements-dev.txt

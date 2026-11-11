@@ -38,9 +38,11 @@ def test_no_orphan_foreign_keys(db_path):
     con = sqlite3.connect(db_path)
     checks = [
         "SELECT COUNT(*) FROM employees e LEFT JOIN departments d USING (department_id) WHERE d.department_id IS NULL",
-        "SELECT COUNT(*) FROM employees e LEFT JOIN employees m ON m.employee_id = e.manager_id WHERE e.manager_id IS NOT NULL AND m.employee_id IS NULL",
+        "SELECT COUNT(*) FROM employees e LEFT JOIN employees m ON m.employee_id = e.manager_id "
+        "WHERE e.manager_id IS NOT NULL AND m.employee_id IS NULL",
         "SELECT COUNT(*) FROM payroll_runs p LEFT JOIN employees e USING (employee_id) WHERE e.employee_id IS NULL",
-        "SELECT COUNT(*) FROM payroll_exceptions x LEFT JOIN payroll_runs p USING (payroll_id) WHERE p.payroll_id IS NULL",
+        "SELECT COUNT(*) FROM payroll_exceptions x LEFT JOIN payroll_runs p USING (payroll_id) "
+        "WHERE p.payroll_id IS NULL",
     ]
     for sql in checks:
         assert con.execute(sql).fetchone()[0] == 0, sql
@@ -48,5 +50,8 @@ def test_no_orphan_foreign_keys(db_path):
 
 def test_planted_duplicates_exist(db_path):
     con = sqlite3.connect(db_path)
-    dupes = con.execute("SELECT COUNT(*) FROM (SELECT 1 FROM payroll_runs GROUP BY employee_id, pay_period_start HAVING COUNT(*) > 1)").fetchone()[0]
+    dupes = con.execute(
+        "SELECT COUNT(*) FROM (SELECT 1 FROM payroll_runs "
+        "GROUP BY employee_id, pay_period_start HAVING COUNT(*) > 1)"
+    ).fetchone()[0]
     assert dupes > 0

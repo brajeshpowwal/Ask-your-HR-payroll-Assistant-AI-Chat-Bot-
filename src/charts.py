@@ -29,7 +29,7 @@ def _is_time_column(df: pd.DataFrame, col: str) -> bool:
     if any(h in col.lower() for h in DATE_HINTS):
         return True
     sample = df[col].dropna().astype(str).head(5)
-    return not sample.empty and sample.str.match(r"^\d{4}(-\d{2})?(-\d{2})?$").all()
+    return bool(not sample.empty and sample.str.match(r"^\d{4}(-\d{2})?(-\d{2})?$").all())
 
 
 def _format_number(value: float) -> str:

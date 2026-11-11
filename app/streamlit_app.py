@@ -55,7 +55,7 @@ def load_agent(provider: str, model: str) -> SQLAgent:
 @st.cache_data(show_spinner=False)
 def table_counts(db_path: str) -> list[tuple[str, int]]:
     s = get_settings()
-    return [(t, int(run_query(f"SELECT COUNT(*) AS n FROM {t}", Path(db_path)).iloc[0, 0]))
+    return [(t, int(run_query(f"SELECT COUNT(*) AS n FROM {t}", Path(db_path))["n"].sum()))
             for t in s.allowed_tables]
 
 
@@ -135,7 +135,8 @@ if state.get("pending"):
 
 if question:
     if state.asked >= settings.max_questions_per_session:
-        st.warning("You've reached the demo limit for this session. Clear the chat or run it locally for unlimited use.")
+        st.warning("You've reached the demo limit for this session. "
+                   "Clear the chat or run it locally for unlimited use.")
         st.stop()
     try:
         agent = load_agent(provider, model)

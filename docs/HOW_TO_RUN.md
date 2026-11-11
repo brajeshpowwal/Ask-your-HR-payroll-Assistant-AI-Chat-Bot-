@@ -4,7 +4,7 @@ This takes about 20 minutes the first time. Commands are for Windows PowerShell;
 
 ## 1. Install the tools (once)
 
-1. **Python 3.11 or 3.12** from python.org. In the installer, tick **"Add python.exe to PATH"**.
+1. **Python 3.11, 3.12 or 3.13** from python.org. In the installer, tick **"Add python.exe to PATH"**.
 2. **Git** from git-scm.com (default options are fine).
 3. **VS Code** from code.visualstudio.com, then install the **Python** extension (by Microsoft).
 4. Optional: **Claude Code** in VS Code, to keep building with AI help.
@@ -81,10 +81,13 @@ You should see 9 tables with their row counts. The file `data/hr_payroll.db` is 
 ## 8. Run the tests
 
 ```powershell
+pip install -r requirements-dev.txt   # test, lint and type-check tools (once)
+ruff check .
+mypy
 python -m pytest
 ```
 
-Expected: `41 passed`. Tests use a fake model, so they work without an API key.
+Expected: `All checks passed!`, `Success: no issues found`, and `41 passed`. Tests use a fake model, so they work without an API key.
 
 ## 9. Start the app
 

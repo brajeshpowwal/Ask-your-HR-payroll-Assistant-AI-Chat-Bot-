@@ -118,13 +118,16 @@ python eval/run_eval.py --provider gemini  # compare another model
 └── docs/                    how-to, interview guide, LinkedIn kit
 ```
 
-## Run the tests
+## Run the tests and quality checks
 
 ```bash
-python -m pytest
+pip install -r requirements-dev.txt
+ruff check .        # lint
+mypy                # type-check
+python -m pytest    # tests
 ```
 
-Tests use a fake LLM with scripted replies, so they are free, fast and need no API key.
+Tests use a fake LLM with scripted replies, so they are free, fast and need no API key. CI runs all three on Python 3.11 and 3.13.
 
 ## Deploy for free
 
