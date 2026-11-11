@@ -1,6 +1,7 @@
 import pandas as pd
+import pytest
 
-from eval.run_eval import results_match
+from eval.run_eval import ask_with_retry, results_match
 from src.charts import choose_chart
 
 
@@ -15,6 +16,34 @@ def test_results_match_detects_wrong_values():
     assert not results_match(expected, pd.DataFrame({"n": [10, 21]}))
     assert not results_match(expected, pd.DataFrame({"n": [10]}))
     assert not results_match(expected, None)
+
+
+class _FlakyAgent:
+    """Fails with a rate-limit error a few times, then answers."""
+
+    def __init__(self, failures: int, message: str = "[429] Too Many Requests"):
+        self.failures, self.message, self.calls = failures, message, 0
+
+    def ask(self, question):
+        self.calls += 1
+        if self.calls <= self.failures:
+            raise RuntimeError(self.message)
+        return f"answer to {question}"
+
+
+def test_ask_with_retry_waits_out_rate_limits():
+    agent = _FlakyAgent(failures=2)
+    assert ask_with_retry(agent, "q", attempts=3, wait_s=0) == "answer to q"
+    assert agent.calls == 3
+
+
+def test_ask_with_retry_gives_up_and_does_not_retry_other_errors():
+    with pytest.raises(RuntimeError, match="429"):
+        ask_with_retry(_FlakyAgent(failures=5), "q", attempts=3, wait_s=0)
+    agent = _FlakyAgent(failures=1, message="model not found")
+    with pytest.raises(RuntimeError, match="not found"):
+        ask_with_retry(agent, "q", attempts=3, wait_s=0)
+    assert agent.calls == 1
 
 
 def test_chart_choice():

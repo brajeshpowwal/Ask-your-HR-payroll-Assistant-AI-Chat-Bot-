@@ -62,6 +62,23 @@ def results_match(expected: pd.DataFrame, predicted: pd.DataFrame | None) -> boo
     return True
 
 
+def _is_rate_limit(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return "429" in text or "too many requests" in text or "rate limit" in text
+
+
+def ask_with_retry(agent, question: str, attempts: int = 4, wait_s: float = 20.0):
+    """Free tiers return 429 under load; a rate-limit error is not a wrong answer, so wait and retry."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return agent.ask(question)
+        except Exception as exc:
+            if not _is_rate_limit(exc) or attempt == attempts:
+                raise
+            time.sleep(wait_s * attempt)
+    raise AssertionError("unreachable")  # pragma: no cover
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--provider")
@@ -92,7 +109,7 @@ def main() -> None:
     for i, q in enumerate(questions, 1):
         expected = run_query(q["sql"], settings.db_path)
         try:
-            res = agent.ask(q["question"])
+            res = ask_with_retry(agent, q["question"])
             correct = res.status == "ok" and results_match(expected, res.data)
             rows.append({"id": q["id"], "difficulty": q["difficulty"], "question": q["question"],
                          "correct": correct, "status": res.status, "valid_sql": res.status == "ok",
