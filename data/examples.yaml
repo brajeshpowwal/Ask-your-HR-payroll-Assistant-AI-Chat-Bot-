@@ -1,0 +1,287 @@
+# Few-shot examples. The agent retrieves the most similar ones for each new
+# question and shows them to the LLM. Keep these DIFFERENT from the questions
+# in eval/questions.jsonl, otherwise the evaluation would be cheating.
+
+- question: How many employees does each company have right now?
+  sql: |
+    SELECT c.company_name, COUNT(*) AS active_headcount
+    FROM employees e
+    JOIN companies c ON c.company_id = e.company_id
+    WHERE e.status = 'Active'
+    GROUP BY c.company_name
+    ORDER BY active_headcount DESC;
+
+- question: List the departments of Cedarline Health with their cost centers.
+  sql: |
+    SELECT d.department_name, d.cost_center
+    FROM departments d
+    JOIN companies c ON c.company_id = d.company_id
+    WHERE c.company_name = 'Cedarline Health'
+    ORDER BY d.department_name;
+
+- question: How many contractors are active in the group?
+  sql: |
+    SELECT COUNT(*) AS active_contractors
+    FROM employees
+    WHERE status = 'Active' AND employment_type = 'Contract';
+
+- question: Who was hired in September 2026?
+  sql: |
+    SELECT first_name || ' ' || last_name AS employee_name, job_title, hire_date
+    FROM employees
+    WHERE strftime('%Y-%m', hire_date) = '2026-09'
+    ORDER BY hire_date;
+
+- question: Show the current salary of every active Finance employee at Brightwave Solutions.
+  sql: |
+    WITH current_salary AS (
+      SELECT employee_id, annual_salary,
+             ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY effective_date DESC) AS rn
+      FROM salaries
+    )
+    SELECT e.first_name || ' ' || e.last_name AS employee_name, e.job_title,
+           ROUND(cs.annual_salary, 2) AS current_salary
+    FROM employees e
+    JOIN current_salary cs ON cs.employee_id = e.employee_id AND cs.rn = 1
+    JOIN departments d ON d.department_id = e.department_id
+    JOIN companies c ON c.company_id = e.company_id
+    WHERE e.status = 'Active' AND d.department_name = 'Finance'
+      AND c.company_name = 'Brightwave Solutions'
+    ORDER BY current_salary DESC;
+
+- question: What was the total gross payroll per month in 2025?
+  sql: |
+    SELECT strftime('%Y-%m', pay_date) AS pay_month, ROUND(SUM(gross_pay), 2) AS total_gross_pay
+    FROM payroll_runs
+    WHERE strftime('%Y', pay_date) = '2025'
+    GROUP BY pay_month
+    ORDER BY pay_month;
+
+- question: Which company paid the most net pay in the last 6 months?
+  sql: |
+    SELECT c.company_name, ROUND(SUM(p.net_pay), 2) AS total_net_pay
+    FROM payroll_runs p
+    JOIN companies c ON c.company_id = p.company_id
+    WHERE p.pay_date > date('2026-10-31', '-6 months')
+    GROUP BY c.company_name
+    ORDER BY total_net_pay DESC
+    LIMIT 1;
+
+- question: How many payroll exceptions of each type are still open or in review?
+  sql: |
+    SELECT exception_type, COUNT(*) AS open_exceptions
+    FROM payroll_exceptions
+    WHERE status IN ('Open', 'In Review')
+    GROUP BY exception_type
+    ORDER BY open_exceptions DESC;
+
+- question: What is the average number of days it takes to resolve a payroll exception?
+  sql: |
+    SELECT ROUND(AVG(julianday(resolved_date) - julianday(raised_date)), 1) AS avg_days_to_resolve
+    FROM payroll_exceptions
+    WHERE status = 'Resolved';
+
+- question: Find employees who were paid twice for the same pay period.
+  sql: |
+    SELECT e.first_name || ' ' || e.last_name AS employee_name, p.pay_period_start,
+           COUNT(*) AS times_paid, ROUND(SUM(p.gross_pay), 2) AS total_gross
+    FROM payroll_runs p
+    JOIN employees e ON e.employee_id = p.employee_id
+    GROUP BY p.employee_id, p.pay_period_start
+    HAVING COUNT(*) > 1
+    ORDER BY p.pay_period_start;
+
+- question: Who are the direct reports of the Head of Sales at Orbitron Retail?
+  sql: |
+    SELECT r.first_name || ' ' || r.last_name AS employee_name, r.job_title
+    FROM employees m
+    JOIN employees r ON r.manager_id = m.employee_id
+    JOIN companies c ON c.company_id = m.company_id
+    WHERE m.job_title = 'Head of Sales' AND c.company_name = 'Orbitron Retail'
+    ORDER BY employee_name;
+
+- question: How many people left each company in 2025 and why?
+  sql: |
+    SELECT c.company_name, e.termination_reason, COUNT(*) AS leavers
+    FROM employees e
+    JOIN companies c ON c.company_id = e.company_id
+    WHERE strftime('%Y', e.termination_date) = '2025'
+    GROUP BY c.company_name, e.termination_reason
+    ORDER BY c.company_name, leavers DESC;
+
+- question: What is the attrition rate for the whole group over the last 12 months?
+  sql: |
+    WITH bounds AS (SELECT date('2026-10-31', '-12 months') AS start_d, '2026-10-31' AS end_d),
+    hc AS (
+      SELECT
+        SUM(CASE WHEN e.hire_date <= b.start_d AND (e.termination_date IS NULL OR e.termination_date > b.start_d) THEN 1 ELSE 0 END) AS hc_start,
+        SUM(CASE WHEN e.hire_date <= b.end_d AND (e.termination_date IS NULL OR e.termination_date > b.end_d) THEN 1 ELSE 0 END) AS hc_end,
+        SUM(CASE WHEN e.termination_date > b.start_d AND e.termination_date <= b.end_d THEN 1 ELSE 0 END) AS leavers
+      FROM employees e CROSS JOIN bounds b
+    )
+    SELECT leavers, hc_start, hc_end,
+           ROUND(100.0 * leavers / ((hc_start + hc_end) / 2.0), 1) AS attrition_rate_pct
+    FROM hc;
+
+- question: Which employees have more than 15 days of annual leave left?
+  sql: |
+    SELECT e.first_name || ' ' || e.last_name AS employee_name, lb.balance_days
+    FROM leave_balances lb
+    JOIN employees e ON e.employee_id = lb.employee_id
+    WHERE lb.leave_type = 'Annual' AND lb.balance_days > 15
+    ORDER BY lb.balance_days DESC;
+
+- question: How many sick days were taken per department in the last 90 days?
+  sql: |
+    SELECT d.department_name, COUNT(*) AS sick_days
+    FROM attendance a
+    JOIN employees e ON e.employee_id = a.employee_id
+    JOIN departments d ON d.department_id = e.department_id
+    WHERE a.status = 'Leave' AND a.leave_type = 'Sick'
+    GROUP BY d.department_name
+    ORDER BY sick_days DESC;
+
+- question: Show the absenteeism rate by company.
+  sql: |
+    SELECT c.company_name,
+           ROUND(100.0 * SUM(CASE WHEN a.status = 'Absent' THEN 1 ELSE 0 END) / COUNT(*), 1) AS absenteeism_rate_pct
+    FROM attendance a
+    JOIN employees e ON e.employee_id = a.employee_id
+    JOIN companies c ON c.company_id = e.company_id
+    WHERE a.status <> 'Holiday'
+    GROUP BY c.company_name
+    ORDER BY absenteeism_rate_pct DESC;
+
+- question: What is the average performance rating by department in the 2025-H2 cycle?
+  sql: |
+    SELECT d.department_name, ROUND(AVG(r.rating), 2) AS avg_rating, COUNT(*) AS reviews
+    FROM performance_reviews r
+    JOIN employees e ON e.employee_id = r.employee_id
+    JOIN departments d ON d.department_id = e.department_id
+    WHERE r.review_cycle = '2025-H2'
+    GROUP BY d.department_name
+    ORDER BY avg_rating DESC;
+
+- question: List employees rated 1 in the latest review cycle along with their manager.
+  sql: |
+    SELECT e.first_name || ' ' || e.last_name AS employee_name, e.job_title,
+           m.first_name || ' ' || m.last_name AS manager_name
+    FROM performance_reviews r
+    JOIN employees e ON e.employee_id = r.employee_id
+    LEFT JOIN employees m ON m.employee_id = e.manager_id
+    WHERE r.review_cycle = '2026-H1' AND r.rating = 1
+    ORDER BY employee_name;
+
+- question: How many promotions happened each year?
+  sql: |
+    SELECT strftime('%Y', effective_date) AS year, COUNT(*) AS promotions
+    FROM salaries
+    WHERE change_reason = 'Promotion'
+    GROUP BY year
+    ORDER BY year;
+
+- question: What is the average tenure in years of active employees by company?
+  sql: |
+    SELECT c.company_name,
+           ROUND(AVG((julianday('2026-10-31') - julianday(e.hire_date)) / 365.25), 1) AS avg_tenure_years
+    FROM employees e
+    JOIN companies c ON c.company_id = e.company_id
+    WHERE e.status = 'Active'
+    GROUP BY c.company_name
+    ORDER BY avg_tenure_years DESC;
+
+- question: Which 5 employees worked the most overtime hours in 2026?
+  sql: |
+    SELECT e.first_name || ' ' || e.last_name AS employee_name, ROUND(SUM(p.overtime_hours), 1) AS overtime_hours
+    FROM payroll_runs p
+    JOIN employees e ON e.employee_id = p.employee_id
+    WHERE strftime('%Y', p.pay_date) = '2026'
+    GROUP BY p.employee_id
+    ORDER BY overtime_hours DESC
+    LIMIT 5;
+
+- question: How many active employees work in each US state?
+  sql: |
+    SELECT work_state, COUNT(*) AS active_employees
+    FROM employees
+    WHERE status = 'Active'
+    GROUP BY work_state
+    ORDER BY active_employees DESC;
+
+- question: What share of the workforce is part-time, full-time and contract?
+  sql: |
+    SELECT employment_type, COUNT(*) AS employees,
+           ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM employees WHERE status = 'Active'), 1) AS pct
+    FROM employees
+    WHERE status = 'Active'
+    GROUP BY employment_type
+    ORDER BY employees DESC;
+
+- question: Which managers have more than 12 direct reports?
+  sql: |
+    SELECT m.first_name || ' ' || m.last_name AS manager_name, m.job_title, COUNT(*) AS direct_reports
+    FROM employees r
+    JOIN employees m ON m.employee_id = r.manager_id
+    WHERE r.status = 'Active'
+    GROUP BY m.employee_id
+    HAVING COUNT(*) > 12
+    ORDER BY direct_reports DESC;
+
+- question: Total tax withheld by company for 2026 so far.
+  sql: |
+    SELECT c.company_name, ROUND(SUM(p.tax_withheld), 2) AS total_tax
+    FROM payroll_runs p
+    JOIN companies c ON c.company_id = p.company_id
+    WHERE p.pay_date >= '2026-01-01'
+    GROUP BY c.company_name
+    ORDER BY total_tax DESC;
+
+- question: What was the payroll cost of the Engineering department last quarter?
+  sql: |
+    SELECT ROUND(SUM(p.gross_pay), 2) AS engineering_payroll_cost
+    FROM payroll_runs p
+    JOIN employees e ON e.employee_id = p.employee_id
+    JOIN departments d ON d.department_id = e.department_id
+    WHERE d.department_name = 'Engineering'
+      AND p.pay_date BETWEEN '2026-07-01' AND '2026-09-30';
+
+- question: Show monthly new hires for the last 12 months.
+  sql: |
+    SELECT strftime('%Y-%m', hire_date) AS hire_month, COUNT(*) AS new_hires
+    FROM employees
+    WHERE hire_date > date('2026-10-31', '-12 months')
+    GROUP BY hire_month
+    ORDER BY hire_month;
+
+- question: Which open payroll exceptions have been waiting longer than 30 days?
+  sql: |
+    SELECT x.exception_id, x.exception_type, x.status, x.raised_date,
+           CAST(julianday('2026-10-31') - julianday(x.raised_date) AS INTEGER) AS days_open,
+           e.first_name || ' ' || e.last_name AS employee_name
+    FROM payroll_exceptions x
+    JOIN employees e ON e.employee_id = x.employee_id
+    WHERE x.status IN ('Open', 'In Review')
+      AND julianday('2026-10-31') - julianday(x.raised_date) > 30
+    ORDER BY days_open DESC;
+
+- question: Compare average current salary of men and women.
+  sql: |
+    -- The dataset does not store gender, so this cannot be answered.
+    SELECT 'The database does not contain gender information.' AS note;
+
+- question: Rank departments by average current salary within Northpeak Logistics.
+  sql: |
+    WITH current_salary AS (
+      SELECT employee_id, annual_salary,
+             ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY effective_date DESC) AS rn
+      FROM salaries
+    )
+    SELECT d.department_name, ROUND(AVG(cs.annual_salary), 2) AS avg_salary,
+           RANK() OVER (ORDER BY AVG(cs.annual_salary) DESC) AS salary_rank
+    FROM employees e
+    JOIN current_salary cs ON cs.employee_id = e.employee_id AND cs.rn = 1
+    JOIN departments d ON d.department_id = e.department_id
+    JOIN companies c ON c.company_id = e.company_id
+    WHERE e.status = 'Active' AND c.company_name = 'Northpeak Logistics'
+    GROUP BY d.department_name
+    ORDER BY salary_rank;

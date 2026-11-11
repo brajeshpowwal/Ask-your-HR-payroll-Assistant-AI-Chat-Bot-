@@ -1,0 +1,21 @@
+# Core (tested with Python 3.11 and 3.12)
+langchain-core>=1.0
+langgraph>=1.0
+sqlglot>=25.0
+pandas>=2.2
+scikit-learn>=1.4
+pyyaml>=6.0
+python-dotenv>=1.0
+faker>=30.0
+streamlit>=1.50
+plotly>=5.20
+
+# LLM providers: keep the ones you use (Groq + Gemini have free tiers)
+langchain-groq>=1.0
+langchain-google-genai>=3.0
+# langchain-ollama>=1.0              # local, fully free (install Ollama first)
+# langchain-anthropic>=1.0           # Claude (paid)
+# langchain-nvidia-ai-endpoints      # NVIDIA NIM
+
+# Development
+pytest>=8.0
