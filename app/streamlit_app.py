@@ -32,7 +32,7 @@ SAMPLE_QUESTIONS = [
     "How many active employees does each company have?",
     "Show total gross payroll by month for 2026",
     "Which open payroll exceptions are older than 14 days?",
-    "What is the attrition rate per company over the last 12 months?",
+    "Attrition rate by company, last 12 months",
     "Who are the top 5 earners at Brightwave Solutions?",
     "Which department has the highest absenteeism rate?",
 ]
@@ -75,10 +75,11 @@ with st.sidebar:
     model = st.text_input("Model name", value=default_model,
                           help="Providers retire models. If this one fails, paste a current model name.")
 
-    st.subheader("Try a question")
-    for q in SAMPLE_QUESTIONS:
-        if st.button(q, width="stretch"):
-            state.pending = q
+    if state.messages:  # on an empty chat the samples sit on the page itself (see below)
+        st.subheader("Try a question")
+        for q in SAMPLE_QUESTIONS:
+            if st.button(q, width="stretch", key=f"side-{q}"):
+                state.pending = q
 
     left = max(0, settings.max_questions_per_session - state.asked)
     st.caption(f"{left} questions left in this session (demo limit).")
@@ -97,9 +98,17 @@ st.title("Ask your HR & payroll data")
 st.caption("Type a question in plain English. The assistant writes safe, read-only SQL, "
            "runs it, and explains the answer. You can always see the SQL it used.")
 
+if not state.messages:
+    # Phones collapse the sidebar, so new visitors get the samples on the page.
+    st.markdown("**Try one of these questions**")
+    for q in SAMPLE_QUESTIONS:  # one column: two columns cut the longer questions short
+        if st.button(q, width="stretch", key=f"main-{q}"):
+            state.pending = q
+
 
 def render_result(msg: dict) -> None:
-    st.markdown(msg["answer"])
+    # Two trailing spaces make Markdown keep the model's single line breaks (lists per company etc.).
+    st.markdown(msg["answer"].replace("\n", "  \n"))
     df = msg.get("data")
     if msg.get("status") != "ok" or df is None:
         return
