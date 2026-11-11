@@ -27,7 +27,7 @@ Business teams wait days for simple data answers because only analysts can write
 - **Auto charts**: KPI card, line chart for trends, bar chart for comparisons; CSV download
 - **Swap the LLM with one setting**: Groq, Gemini, Ollama (local), Claude, NVIDIA
 - **Evaluation**: execution accuracy on 50 questions (easy / medium / hard)
-- **41 automated tests** run on every push with GitHub Actions
+- **42 automated tests** run on every push with GitHub Actions
 
 ## How it works
 
@@ -59,7 +59,7 @@ The model is called 3 times for a normal question: pick tables, write SQL, expla
 | departments | 24 | 6 departments per company with cost centers |
 | employees | 635 | Hires, leavers, job levels, manager hierarchy, work state |
 | salaries | 2,111 | Salary history: new hire, annual merit, promotion |
-| payroll_runs | 24,437 | Two years of biweekly payroll (gross, tax, benefits, net) |
+| payroll_runs | 24,437 | Two years of biweekly payroll (gross, tax, benefits, net, employer tax) |
 | payroll_exceptions | 439 | Payroll issues with status and resolution dates |
 | attendance | 35,186 | Daily attendance for the last 90 days |
 | performance_reviews | 1,706 | Half-yearly ratings 1–5 |
@@ -114,7 +114,7 @@ python eval/run_eval.py --provider gemini  # compare another model
 │   └── config.py            settings from .env
 ├── data/                    generator, schema docs, glossary, examples
 ├── eval/                    50 test questions + accuracy runner
-├── tests/                   41 pytest tests (no API key needed)
+├── tests/                   42 pytest tests (no API key needed)
 └── docs/                    how-to, interview guide, LinkedIn kit
 ```
 

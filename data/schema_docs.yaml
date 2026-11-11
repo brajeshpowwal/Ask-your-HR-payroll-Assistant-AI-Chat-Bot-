@@ -63,6 +63,7 @@ payroll_runs:
     tax_withheld: Tax withheld in USD.
     benefits_deduction: Benefits deduction in USD (0 for contractors).
     net_pay: Take-home pay in USD = gross_pay - tax_withheld - benefits_deduction.
+    employer_tax: Employer payroll tax in USD paid by the company on top of gross pay (7.65% of gross_pay; 0 for contractors). Not deducted from the employee.
 
 payroll_exceptions:
   description: Payroll issues raised by the payroll team for a specific payroll row.

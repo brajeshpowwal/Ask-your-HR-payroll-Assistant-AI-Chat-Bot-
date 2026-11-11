@@ -87,7 +87,7 @@ mypy
 python -m pytest
 ```
 
-Expected: `All checks passed!`, `Success: no issues found`, and `41 passed`. Tests use a fake model, so they work without an API key.
+Expected: `All checks passed!`, `Success: no issues found`, and `42 passed`. Tests use a fake model, so they work without an API key.
 
 ## 9. Start the app
 

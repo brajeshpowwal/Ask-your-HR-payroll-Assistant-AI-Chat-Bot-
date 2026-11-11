@@ -238,7 +238,7 @@
 
 - question: What was the payroll cost of the Engineering department last quarter?
   sql: |
-    SELECT ROUND(SUM(p.gross_pay), 2) AS engineering_payroll_cost
+    SELECT ROUND(SUM(p.gross_pay + p.employer_tax), 2) AS engineering_payroll_cost
     FROM payroll_runs p
     JOIN employees e ON e.employee_id = p.employee_id
     JOIN departments d ON d.department_id = e.department_id

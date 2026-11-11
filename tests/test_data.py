@@ -1,7 +1,7 @@
 import hashlib
 import sqlite3
 
-from data.generate_data import COMPANIES, generate
+from data.generate_data import COMPANIES, EMPLOYER_TAX_RATE, generate
 
 TABLES = ["companies", "departments", "employees", "salaries", "payroll_runs",
           "payroll_exceptions", "attendance", "performance_reviews", "leave_balances"]
@@ -46,6 +46,19 @@ def test_no_orphan_foreign_keys(db_path):
     ]
     for sql in checks:
         assert con.execute(sql).fetchone()[0] == 0, sql
+
+
+def test_employer_tax_follows_fica_rule(db_path):
+    """Employees: 7.65% of gross (Social Security + Medicare); contractors: none."""
+    con = sqlite3.connect(db_path)
+    rows = con.execute(
+        "SELECT e.employment_type, p.gross_pay, p.employer_tax "
+        "FROM payroll_runs p JOIN employees e USING (employee_id)"
+    ).fetchall()
+    assert {r[0] for r in rows} >= {"Full-time", "Contract"}
+    for employment_type, gross, employer_tax in rows:
+        expected = 0.0 if employment_type == "Contract" else round(gross * EMPLOYER_TAX_RATE, 2)
+        assert abs(employer_tax - expected) <= 0.01, (employment_type, gross, employer_tax)
 
 
 def test_planted_duplicates_exist(db_path):

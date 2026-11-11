@@ -22,6 +22,9 @@ SNAPSHOT_DATE = date(2026, 10, 31)          # the "today" of the dataset
 PAYROLL_START = date(2024, 11, 1)           # two years of biweekly payroll
 ATTENDANCE_DAYS = 90                        # attendance kept for the last 90 days
 DEFAULT_PATH = Path(__file__).resolve().parent / "hr_payroll.db"
+# Employer share of US FICA: Social Security 6.2% + Medicare 1.45%. Kept simple on purpose
+# (no wage-base cap, no FUTA/SUTA). Contractors are not on payroll tax, so they get 0.
+EMPLOYER_TAX_RATE = 0.0765
 
 COMPANIES = [
     # name, industry, hq_state, founded, target headcount
@@ -106,7 +109,8 @@ CREATE TABLE payroll_runs (
     gross_pay          REAL NOT NULL,
     tax_withheld       REAL NOT NULL,
     benefits_deduction REAL NOT NULL,
-    net_pay            REAL NOT NULL
+    net_pay            REAL NOT NULL,
+    employer_tax       REAL NOT NULL
 );
 CREATE TABLE payroll_exceptions (
     exception_id   INTEGER PRIMARY KEY,
@@ -300,10 +304,12 @@ def generate(out_path: Path | str = DEFAULT_PATH) -> Path:
             gross = annual / 26 * factor + ot_hours * (annual / 2080) * 1.5
             tax = gross * rng.uniform(0.18, 0.24)
             benefits = 0.0 if e["employment_type"] == "Contract" else (180.0 if factor == 1 else 90.0)
+            # Computed from the rounded gross, without the RNG, so all other data stays identical.
+            employer_tax = 0.0 if e["employment_type"] == "Contract" else round(round(gross, 2) * EMPLOYER_TAX_RATE, 2)
             pay_id += 1
             row = (pay_id, e["employee_id"], e["company_id"], period_start.isoformat(),
                    period_end.isoformat(), pay_date.isoformat(), 80.0 * factor, ot_hours,
-                   round(gross, 2), round(tax, 2), benefits, round(gross - tax - benefits, 2))
+                   round(gross, 2), round(tax, 2), benefits, round(gross - tax - benefits, 2), employer_tax)
             payroll.append(row)
             if rng.random() < 0.0008:  # planted duplicate payment
                 pay_id += 1
@@ -408,7 +414,7 @@ def generate(out_path: Path | str = DEFAULT_PATH) -> Path:
          for e in employees],
     )
     con.executemany("INSERT INTO salaries VALUES (?,?,?,?,?)", salaries)
-    con.executemany("INSERT INTO payroll_runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", payroll)
+    con.executemany("INSERT INTO payroll_runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", payroll)
     con.executemany("INSERT INTO payroll_exceptions VALUES (?,?,?,?,?,?,?,?,?)", exceptions)
     con.executemany("INSERT INTO attendance VALUES (?,?,?,?,?,?)", attendance)
     con.executemany("INSERT INTO performance_reviews VALUES (?,?,?,?,?,?)", reviews)
