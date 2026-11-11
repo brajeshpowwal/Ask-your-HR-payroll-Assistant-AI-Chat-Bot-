@@ -68,16 +68,23 @@ def main() -> None:
     parser.add_argument("--model")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--difficulty", choices=["easy", "medium", "hard"])
+    parser.add_argument("--per-difficulty", type=int, help="first N questions of each difficulty (balanced sample)")
+    parser.add_argument("--thinking", choices=["on", "off"], help="override LLM_THINKING")
     parser.add_argument("--sleep", type=float, default=1.0, help="pause between questions (free-tier rate limits)")
     args = parser.parse_args()
 
-    overrides = {k: v for k, v in {"provider": args.provider, "model": args.model}.items() if v}
+    overrides: dict = {k: v for k, v in {"provider": args.provider, "model": args.model}.items() if v}
+    if args.thinking:
+        overrides["thinking"] = args.thinking == "on"
     settings = get_settings(**overrides)
     agent = SQLAgent(get_llm(settings), settings)
 
     questions = [json.loads(line) for line in open(ROOT / "eval" / "questions.jsonl", encoding="utf-8")]
     if args.difficulty:
         questions = [q for q in questions if q["difficulty"] == args.difficulty]
+    if args.per_difficulty:
+        questions = [q for d in ("easy", "medium", "hard")
+                     for q in [x for x in questions if x["difficulty"] == d][: args.per_difficulty]]
     if args.limit:
         questions = questions[: args.limit]
 
@@ -103,7 +110,8 @@ def main() -> None:
     out_dir = ROOT / "eval" / "results"
     out_dir.mkdir(exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M")
-    out = out_dir / f"{settings.provider}_{settings.model_name.replace('/', '-')}_{stamp}.csv"
+    thinking = "thinking-on" if settings.thinking else "thinking-off"
+    out = out_dir / f"{settings.provider}_{settings.model_name.replace('/', '-')}_{thinking}_{stamp}.csv"
     df.to_csv(out, index=False)
 
     def pct(series) -> str:
@@ -113,9 +121,9 @@ def main() -> None:
           "| Valid SQL | Avg retries | Avg seconds |")
     print("|---|---|---|---|---|---|---|---|---|---|")
     by = {d: df[df.difficulty == d]["correct"] for d in ("easy", "medium", "hard")}
-    print(f"| {settings.provider} | {settings.model_name} | {len(df)} | {pct(df.correct)} | {pct(by['easy'])} | "
-          f"{pct(by['medium'])} | {pct(by['hard'])} | {pct(df.valid_sql)} | {df.retries.mean():.2f} | "
-          f"{df.seconds.mean():.1f} |")
+    print(f"| {settings.provider} | {settings.model_name} ({thinking}) | {len(df)} | {pct(df.correct)} | "
+          f"{pct(by['easy'])} | {pct(by['medium'])} | {pct(by['hard'])} | {pct(df.valid_sql)} | "
+          f"{df.retries.mean():.2f} | {df.seconds.mean():.1f} |")
     print(f"\nDetails saved to {out.relative_to(ROOT)}")
 
 

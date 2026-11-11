@@ -26,6 +26,13 @@ def missing_api_key(settings: Settings) -> str | None:
     return None
 
 
+def nvidia_model_kwargs(settings: Settings) -> dict:
+    """Extra request fields for NVIDIA; thinking is switched off via the chat template."""
+    if settings.thinking:
+        return {}
+    return {"chat_template_kwargs": {"enable_thinking": False}}
+
+
 def get_llm(settings: Settings | None = None) -> BaseChatModel:
     s = settings or get_settings()
     if s.provider not in API_KEY_ENV:
@@ -52,7 +59,8 @@ def get_llm(settings: Settings | None = None) -> BaseChatModel:
             return ChatAnthropic(model=s.model_name, temperature=s.temperature, max_tokens=2048)
         if s.provider == "nvidia":
             from langchain_nvidia_ai_endpoints import ChatNVIDIA
-            return ChatNVIDIA(model=s.model_name, temperature=s.temperature)
+            return ChatNVIDIA(model=s.model_name, temperature=s.temperature,
+                              model_kwargs=nvidia_model_kwargs(s))
     except ImportError as exc:  # package for this provider not installed
         package = {
             "groq": "langchain-groq", "gemini": "langchain-google-genai",

@@ -44,6 +44,9 @@ class Settings:
     provider: str = field(default_factory=lambda: os.getenv("LLM_PROVIDER", "groq").strip().lower())
     model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "").strip())
     temperature: float = 0.0
+    # Reasoning models "think" before answering: often more accurate, but much slower.
+    # LLM_THINKING=off asks the provider to skip it (currently honoured for NVIDIA).
+    thinking: bool = field(default_factory=lambda: os.getenv("LLM_THINKING", "on").strip().lower() != "off")
     db_path: Path = field(default_factory=lambda: Path(os.getenv("DB_PATH", ROOT / "data" / "hr_payroll.db")))
     schema_docs_path: Path = ROOT / "data" / "schema_docs.yaml"
     glossary_path: Path = ROOT / "data" / "glossary.yaml"
