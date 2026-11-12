@@ -43,12 +43,26 @@ def test_retired_model_errors_are_recognised():
     assert not is_retired_model_error(Exception("[401] Unauthorized"))
 
 
-def test_hosting_secrets_are_trimmed_into_env(monkeypatch):
-    """A key pasted with a trailing space or newline is rejected by the provider (403)."""
+def test_hosting_secrets_are_cleaned_into_env(monkeypatch):
+    """A key pasted with spaces or a line break is rejected by the provider (403).
+
+    Streamlit Cloud has already copied the raw secrets into env vars, so the cleaned value must replace them.
+    """
     from src.config import apply_secrets
-    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
-    monkeypatch.setenv("LLM_PROVIDER", "groq")
-    apply_secrets({"NVIDIA_API_KEY": "  nvapi-test\n", "LLM_PROVIDER": "nvidia", "nested": {"a": 1}})
+    monkeypatch.setenv("NVIDIA_API_KEY", "  nvapi-te\nst\n")  # raw copy made by the host
+    monkeypatch.setenv("LLM_PROVIDER", " nvidia ")
+    apply_secrets({"NVIDIA_API_KEY": "  nvapi-te\nst\n", "LLM_PROVIDER": " nvidia ", "nested": {"a": 1}})
     import os
-    assert os.environ["NVIDIA_API_KEY"] == "nvapi-test"
-    assert os.environ["LLM_PROVIDER"] == "groq"  # real environment variables win over secrets
+    assert os.environ["NVIDIA_API_KEY"] == "nvapi-test"  # no whitespace can be part of a key
+    assert os.environ["LLM_PROVIDER"] == "nvidia"
+
+
+def test_key_fingerprint_changes_with_the_key_and_hides_it(monkeypatch):
+    """The app caches the model client; a new key in the settings must build a new one."""
+    from src.llm_factory import api_key_fingerprint
+    monkeypatch.setenv("NVIDIA_API_KEY", "nvapi-old")
+    old = api_key_fingerprint("nvidia")
+    monkeypatch.setenv("NVIDIA_API_KEY", "nvapi-new")
+    new = api_key_fingerprint("nvidia")
+    assert old and new and old != new and "nvapi" not in new
+    assert api_key_fingerprint("ollama") == ""

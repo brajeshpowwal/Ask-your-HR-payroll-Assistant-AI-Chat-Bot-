@@ -34,14 +34,15 @@ API_KEY_ENV = {
 
 
 def apply_secrets(secrets: Mapping[str, object]) -> None:
-    """Copy hosting secrets (e.g. Streamlit Cloud) into env vars, trimmed.
+    """Copy hosting secrets (e.g. Streamlit Cloud) into env vars, cleaned.
 
-    Keys pasted into a web form often pick up a space or newline, which the provider
-    rejects as "Authorization failed". Real environment variables keep priority.
+    Keys pasted into a web form often pick up a space or line break, which the provider
+    rejects as "Authorization failed". Streamlit Cloud has already copied the raw values
+    into env vars, so the cleaned value replaces them. An API key never contains whitespace.
     """
     for key, value in secrets.items():
         if isinstance(value, str):
-            os.environ.setdefault(key, value.strip())
+            os.environ[key] = "".join(value.split()) if key.endswith("_API_KEY") else value.strip()
 
 
 def _int(name: str, default: int) -> int:

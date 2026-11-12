@@ -7,6 +7,7 @@ package for the provider you actually use.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -26,7 +27,18 @@ def missing_api_key(settings: Settings) -> str | None:
     return None
 
 
-RETIRED_MODEL_MARKERS = ("[410]", "410 gone", "end of life", "decommissioned", "deprecated and removed")
+def api_key_fingerprint(provider: str) -> str:
+    """Short hash of the provider's API key ("" if none), safe to use as a cache key.
+
+    The app caches the model client; passing this along means a key changed in the
+    hosting settings builds a fresh client instead of reusing the one with the old key.
+    """
+    env = API_KEY_ENV.get(provider)
+    value = os.getenv(env, "") if env else ""
+    return hashlib.sha256(value.encode()).hexdigest()[:12] if value else ""
+
+
+RETIRED_MODEL_MARKERS =("[410]", "410 gone", "end of life", "decommissioned", "deprecated and removed")
 
 
 def is_retired_model_error(exc: Exception) -> bool:

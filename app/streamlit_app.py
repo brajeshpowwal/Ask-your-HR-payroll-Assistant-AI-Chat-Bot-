@@ -31,7 +31,12 @@ from src.agent import AgentResult, SQLAgent  # noqa: E402
 from src.charts import choose_chart  # noqa: E402
 from src.config import DEFAULT_MODELS, get_settings  # noqa: E402
 from src.db import ensure_database, run_query  # noqa: E402
-from src.llm_factory import LLMConfigError, get_llm, is_retired_model_error  # noqa: E402
+from src.llm_factory import (  # noqa: E402
+    LLMConfigError,
+    api_key_fingerprint,
+    get_llm,
+    is_retired_model_error,
+)
 
 SAMPLE_QUESTIONS = [
     "How many active employees does each company have?",
@@ -52,7 +57,8 @@ def load_database() -> Path:
 
 
 @st.cache_resource(show_spinner=False)
-def load_agent(provider: str, model: str) -> SQLAgent:
+def load_agent(provider: str, model: str, key_id: str = "") -> SQLAgent:
+    """key_id (a hash of the API key) is only part of the cache key: a new key builds a new client."""
     settings = get_settings(provider=provider, model=model)
     return SQLAgent(get_llm(settings), settings)
 
@@ -164,7 +170,7 @@ def ask_agent(agent: SQLAgent, question: str, history: list[dict]) -> tuple[Agen
     state.setdefault("fallback_for", {})[model] = fallback
     note = (f"The model `{agent.settings.model_name}` has been retired by the provider, so this answer used "
             f"`{fallback}`. Remove LLM_MODEL from the app settings to make this permanent.")
-    return load_agent(provider, fallback).ask(question, history=history), note
+    return load_agent(provider, fallback, api_key_fingerprint(provider)).ask(question, history=history), note
 
 
 for msg in state.messages:
@@ -184,7 +190,7 @@ if question:
                    "Clear the chat or run it locally for unlimited use.")
         st.stop()
     try:  # a model already found retired this session goes straight to its replacement
-        agent = load_agent(provider, state.get("fallback_for", {}).get(model, model))
+        agent = load_agent(provider, state.get("fallback_for", {}).get(model, model), api_key_fingerprint(provider))
     except LLMConfigError as exc:
         st.error(f"The model isn't set up yet: {exc}")
         st.stop()
