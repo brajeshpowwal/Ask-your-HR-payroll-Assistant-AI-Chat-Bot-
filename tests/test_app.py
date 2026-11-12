@@ -1,4 +1,5 @@
 """UI tests with Streamlit's AppTest: render the page without a browser or a model call."""
+import sys
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
@@ -53,6 +54,15 @@ def test_hero_escapes_the_typed_model_name():
     at.sidebar.text_input[0].set_value("<img src=x onerror=alert(1)>").run()
     html = "\n".join(m.value for m in at.markdown)
     assert "<img src=x" not in html and "&lt;img src=x" in html
+
+
+def test_app_survives_stale_project_modules_after_a_deploy(monkeypatch):
+    """Streamlit Cloud reruns the new script but kept the old src.config in memory (live ImportError)."""
+    import types
+    monkeypatch.setitem(sys.modules, "src.config", types.ModuleType("src.config"))  # old copy, no new names
+    at = AppTest.from_file(APP, default_timeout=60).run()
+    assert not at.exception
+    assert hasattr(sys.modules["src.config"], "apply_secrets")
 
 
 def test_word_stream_rebuilds_the_answer_exactly():

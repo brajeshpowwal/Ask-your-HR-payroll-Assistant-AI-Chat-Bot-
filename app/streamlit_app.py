@@ -13,6 +13,11 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+# After a push, Streamlit Cloud reruns this script but can keep old copies of our own modules
+# in memory, so a newly added function fails to import. Re-importing them costs about 10 ms.
+for _name in [m for m in sys.modules if m in ("src", "app") or m.startswith(("src.", "app."))]:
+    del sys.modules[_name]
+
 from src.config import apply_secrets  # noqa: E402
 
 # Streamlit Cloud keeps keys in "Secrets"; copy them into env vars before settings are read.
