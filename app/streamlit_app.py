@@ -47,7 +47,8 @@ SAMPLE_QUESTIONS = [
     "Which department has the highest absenteeism rate?",
 ]
 
-st.set_page_config(page_title="TalkToData · HR & payroll assistant", page_icon="🤖", layout="centered")
+st.set_page_config(page_title="TalkToData · HR & payroll assistant", page_icon="🤖", layout="centered",
+                   initial_sidebar_state="collapsed")
 
 
 # ------------------------------------------------------------------ setup
@@ -78,13 +79,15 @@ state.setdefault("asked", 0)
 
 # ---------------------------------------------------------------- sidebar
 with st.sidebar:
-    st.subheader("Model")
     providers = list(DEFAULT_MODELS)
-    provider = st.selectbox("Provider", providers, index=providers.index(settings.provider)
-                            if settings.provider in providers else 0)
-    default_model = settings.model if provider == settings.provider and settings.model else DEFAULT_MODELS[provider]
-    model = st.text_input("Model name", value=default_model,
-                          help="Providers retire models. If this one fails, paste a current model name.")
+    provider = settings.provider if settings.provider in providers else providers[0]
+    model = settings.model if provider == settings.provider and settings.model else DEFAULT_MODELS[provider]
+    if settings.show_model_settings:  # off on the public demo: visitors don't see which model runs it
+        st.subheader("Model")
+        provider = st.selectbox("Provider", providers, index=providers.index(provider))
+        default_model = settings.model if provider == settings.provider and settings.model else DEFAULT_MODELS[provider]
+        model = st.text_input("Model name", value=default_model,
+                              help="Providers retire models. If this one fails, paste a current model name.")
 
     if state.messages:  # on an empty chat the samples sit on the page itself (see below)
         st.subheader("Try a question")

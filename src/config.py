@@ -60,6 +60,9 @@ class Settings:
     # Reasoning models "think" before answering. Off by default: on the NVIDIA benchmark
     # sample, thinking off was ~4x faster and more accurate. Currently honoured for NVIDIA.
     thinking: bool = field(default_factory=lambda: os.getenv("LLM_THINKING", "off").strip().lower() == "on")
+    # The public demo hides which provider/model it runs; set to "on" to show the model picker.
+    show_model_settings: bool = field(
+        default_factory=lambda: os.getenv("SHOW_MODEL_SETTINGS", "off").strip().lower() == "on")
     db_path: Path = field(default_factory=lambda: Path(os.getenv("DB_PATH", ROOT / "data" / "hr_payroll.db")))
     schema_docs_path: Path = ROOT / "data" / "schema_docs.yaml"
     glossary_path: Path = ROOT / "data" / "glossary.yaml"

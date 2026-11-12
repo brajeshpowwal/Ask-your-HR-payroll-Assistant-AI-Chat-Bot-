@@ -48,13 +48,25 @@ def test_page_has_hero_style_and_greeting():
     assert "data assistant" in at.chat_message[0].markdown[0].value
 
 
-def test_hero_does_not_reveal_the_model():
+def test_hero_does_not_reveal_the_model(monkeypatch):
     """The header says the app is LLM-powered without naming the vendor model (a product choice)."""
+    monkeypatch.setenv("SHOW_MODEL_SETTINGS", "on")
     at = AppTest.from_file(APP, default_timeout=60).run()
     at.sidebar.text_input[0].set_value("vendor/secret-model-9b").run()
     html = "\n".join(m.value for m in at.markdown)
     assert "secret-model-9b" not in html
     assert "LLM-powered" in html
+
+
+def test_model_settings_are_hidden_by_default(monkeypatch):
+    """Visitors must not see which provider or model runs the app."""
+    monkeypatch.delenv("SHOW_MODEL_SETTINGS", raising=False)
+    monkeypatch.setenv("LLM_PROVIDER", "nvidia")
+    at = AppTest.from_file(APP, default_timeout=60).run()
+    assert not at.exception
+    assert len(at.sidebar.text_input) == 0
+    assert len(at.sidebar.selectbox) == 0
+    assert "Model" not in [h.value for h in at.sidebar.subheader]
 
 
 def test_app_survives_stale_project_modules_after_a_deploy(monkeypatch):
