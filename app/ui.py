@@ -4,7 +4,6 @@ Kept out of streamlit_app.py so they can be unit-tested without running the page
 """
 from __future__ import annotations
 
-import html
 import re
 import time
 from collections.abc import Iterator
@@ -20,14 +19,13 @@ def page_style() -> str:
     return f"<style>{STYLE_FILE.read_text(encoding='utf-8')}</style>"
 
 
-def hero_html(model: str, tables: int, rows: int) -> str:
-    """Header with the animated 3D orb. The model name is user-typed, so it is escaped."""
-    short = html.escape(model.rsplit("/", 1)[-1] or "no model")
+def hero_html(tables: int, rows: int) -> str:
+    """Header with the animated 3D orb. It says the app is LLM-powered but does not name the model."""
     return f"""
 <div class="ttd-hero">
   <div class="ttd-orb" aria-hidden="true"><i></i><i></i><i></i><span class="core"></span></div>
   <div class="ttd-hero-copy">
-    <div class="ttd-chip"><span class="dot"></span>Online · {short} · read-only</div>
+    <div class="ttd-chip"><span class="dot"></span>Online · LLM-powered · read-only</div>
     <div class="ttd-title" role="heading" aria-level="1">TalkToData <span>AI</span></div>
     <div class="ttd-sub">Ask your HR &amp; payroll data in plain English. I write safe SQL, run it and explain
       the answer, and you can always see the query.</div>

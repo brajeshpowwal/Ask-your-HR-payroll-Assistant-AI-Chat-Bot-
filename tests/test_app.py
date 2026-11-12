@@ -48,12 +48,13 @@ def test_page_has_hero_style_and_greeting():
     assert "data assistant" in at.chat_message[0].markdown[0].value
 
 
-def test_hero_escapes_the_typed_model_name():
-    """The model name is free text from the sidebar; it must never reach the page as HTML."""
+def test_hero_does_not_reveal_the_model():
+    """The header says the app is LLM-powered without naming the vendor model (a product choice)."""
     at = AppTest.from_file(APP, default_timeout=60).run()
-    at.sidebar.text_input[0].set_value("<img src=x onerror=alert(1)>").run()
+    at.sidebar.text_input[0].set_value("vendor/secret-model-9b").run()
     html = "\n".join(m.value for m in at.markdown)
-    assert "<img src=x" not in html and "&lt;img src=x" in html
+    assert "secret-model-9b" not in html
+    assert "LLM-powered" in html
 
 
 def test_app_survives_stale_project_modules_after_a_deploy(monkeypatch):

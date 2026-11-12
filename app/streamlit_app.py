@@ -107,8 +107,7 @@ with st.sidebar:
 # ------------------------------------------------------------------- main
 counts = table_counts(str(db_path))
 st.markdown(page_style(), unsafe_allow_html=True)
-model_in_use = state.get("fallback_for", {}).get(model, model)
-st.markdown(hero_html(model_in_use, len(counts), sum(n for _, n in counts)), unsafe_allow_html=True)
+st.markdown(hero_html(len(counts), sum(n for _, n in counts)), unsafe_allow_html=True)
 
 with st.chat_message("assistant"):  # the greeting opens every conversation, like a real assistant
     st.markdown("Hi! I'm your HR & payroll data assistant. Ask me about headcount, payroll, attrition, "
