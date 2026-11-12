@@ -13,7 +13,7 @@ Read this end to end once, then use the Q&A section for practice. The goal is th
 - The data: a fictional HR & payroll database (4 companies, 635 employees, 2 years of payroll, exceptions, attendance, reviews), generated with Faker so it's public-safe and repeatable.
 - The agent: six steps in LangGraph: pick tables, retrieve similar examples, write SQL, validate, execute, explain. Errors loop back so the model fixes its own SQL, up to 3 tries.
 - Why HR/payroll: it's my domain, so I could judge whether answers were actually correct and write a glossary of real definitions (attrition, headcount, open exceptions).
-- Proof: execution accuracy on 50 questions (easy/medium/hard), 74 automated tests in CI, live demo.
+- Proof: execution accuracy on 50 questions (easy/medium/hard), 76 automated tests in CI, live demo.
 
 **5 minutes** — add design decisions (section 5), the safety layers (section 6), and what you'd do in production (section 9).
 
@@ -93,7 +93,7 @@ If step 4 or 5 fails, the error message ("no such column: company") is added to 
 | `app/streamlit_app.py` | Chat UI, sidebar, sample questions, session limit | The product people see |
 | `eval/questions.jsonl` | 50 questions (15 easy, 20 medium, 15 hard) + gold SQL | The benchmark |
 | `eval/run_eval.py` | Runs agent vs gold SQL, compares results, prints a table | Proof of quality; compare models |
-| `tests/` | 74 tests with a fake LLM | Free, fast, offline; runs in GitHub Actions |
+| `tests/` | 76 tests with a fake LLM | Free, fast, offline; runs in GitHub Actions |
 
 ---
 
@@ -257,7 +257,7 @@ Training needs huge data and GPUs; fine-tuning needs hundreds of good examples a
 
 ### Evaluation and testing
 
-34. **How do you know it works?** → 50-question benchmark, execution accuracy, per difficulty, valid SQL rate, retries, latency; plus 74 unit tests.
+34. **How do you know it works?** → 50-question benchmark, execution accuracy, per difficulty, valid SQL rate, retries, latency; plus 76 unit tests.
 35. **What is execution accuracy and its weaknesses?** → Compares results. Weakness: a wrong query can coincidentally return the same values (rare with varied questions); ambiguous questions may have more than one valid answer.
 36. **How did you build the gold answers?** → Wrote the SQL by hand and checked every one runs and returns sensible data.
 37. **How do you test an LLM app without calling the LLM?** → Fake model with scripted replies to test the control flow; real model only in the eval.
@@ -308,7 +308,7 @@ Training needs huge data and GPUs; fine-tuning needs hundreds of good examples a
 | Snapshot "today" | 2026-10-31 |
 | Few-shot examples | 30 (4 retrieved per question) |
 | Benchmark | 50 questions: 15 easy, 20 medium, 15 hard |
-| Tests | 74 |
+| Tests | 76 |
 | LLM calls per question | 3 (+1 per retry) |
 | Max SQL attempts | 3 |
 | Row limit / timeout | 500 rows / 10 seconds |

@@ -6,7 +6,9 @@ Ask a question like *"Which open payroll exceptions are older than 14 days?"* an
 
 Built with **Python, LangChain, LangGraph, SQLite and Streamlit**. Works with free LLMs (NVIDIA, Groq, Google Gemini, or a local Ollama model) and with Claude, and from Claude Desktop through an MCP server. Total running cost: **$0**.
 
-> **Live demo:** [hrpayrollassistant.streamlit.app](https://hrpayrollassistant.streamlit.app/) · **Video walkthrough:** _add your LinkedIn/YouTube link here_
+> **Live demo:** [hrpayrollassistant.streamlit.app](https://hrpayrollassistant.streamlit.app/) · **Video walkthrough:** [demo video (MP4, 2½ min)](docs/media/TalkToData_demo.mp4)
+
+[![Watch the demo video](docs/media/video_thumbnail.jpg)](docs/media/TalkToData_demo.mp4)
 
 <!-- Add a demo GIF: record 20–30 seconds of the app and save it as docs/demo.gif -->
 <!-- ![Demo](docs/demo.gif) -->
@@ -30,7 +32,7 @@ Business teams wait days for simple data answers because only analysts can write
 - **Chat-style interface**: animated assistant header, typing indicator while it works, answers typed out word by word, sample-question cards, dark "night console" theme
 - **Swap the LLM with one setting**: Groq, Gemini, Ollama (local), Claude, NVIDIA
 - **Evaluation**: execution accuracy on 50 questions (easy / medium / hard)
-- **74 automated tests** run on every push with GitHub Actions
+- **76 automated tests** run on every push with GitHub Actions
 
 ## How it works
 
@@ -127,7 +129,7 @@ Results on the 50 questions (November 2026, NVIDIA free tier, thinking off):
 │   └── config.py            settings from .env
 ├── data/                    generator, schema docs, glossary, examples
 ├── eval/                    50 test questions + accuracy runner
-├── tests/                   74 pytest tests (no API key needed)
+├── tests/                   76 pytest tests (no API key needed)
 └── docs/                    how-to, interview guide, LinkedIn kit
 ```
 

@@ -1,88 +1,78 @@
 # LinkedIn video and post kit
 
-## Before you record
+## The video
 
-- Deploy the app and run the benchmark first, so you can show the live link and a real accuracy number.
-- Close other tabs and notifications. Zoom the browser to 125% so text is readable on phones.
-- Free recording tools: **Clipchamp** (built into Windows 11) or **OBS Studio** for screen + webcam; **Loom** free plan also works.
-- Record in 1080p. Keep it **2 to 3 minutes**. LinkedIn autoplays muted, so turn on captions (Clipchamp has auto-captions).
-- Do one practice run. Say the words; don't read them.
+- File: [`docs/media/TalkToData_demo.mp4`](media/TalkToData_demo.mp4) (2 min 27 s, 1920×1080, male voice-over, burned-in captions)
+- Made from the real app (recorded in a browser), the 3D schema view from the project portal, and animated slides.
+- The video says the app is powered by an LLM; it does not name the model vendor.
+- All data shown is fictional.
 
-## Video script (about 2.5 minutes)
+### Voice-over script
 
-**0:00–0:15 · Hook (face on camera or title slide)**
-"Most business people can't write SQL, so simple questions like 'how many payroll issues are still open?' wait days for an analyst. I built an AI assistant that answers them in seconds, safely. Let me show you."
+| Scene | What is on screen | Voice-over |
+|---|---|---|
+| Hook | "Simple questions. Locked behind SQL." | HR and payroll teams ask simple questions every day. How many people are active? Which payroll issues are still open? But the answer is locked inside a database, and only someone who knows SQL can get it out. |
+| Problem | Manager → ticket → analyst → days later | So every question becomes a ticket. The analyst is busy, the manager waits for days, and decisions get delayed. That costs the company time, and money. |
+| Solution | TalkToData AI and its six steps | So I built TalkToData, an AI assistant for HR and payroll data, powered by a large language model. You ask in plain English. It writes the SQL, checks it, runs it, and explains the answer with a chart. |
+| Under the hood | 3D view of the 9 tables | Under the hood, an AI agent maps nine connected tables, from employees and salaries to payroll runs and attendance. For every question, the LLM picks only the tables it needs, and writes the query. |
+| Demo: ask | App: a sample question is answered | Here it is, live. I click a question: how many active employees does each company have? The agent picks the right tables, writes the query, and in seconds I get the answer. |
+| Demo: proof | App: chart, data, SQL | Nothing is a black box. Every answer shows the chart, the data, a CSV download, and the exact SQL that was used. |
+| Demo: safety | App: "Delete all employees" is refused | Now, what if someone tries to change the data? I ask it to delete all employees. It refuses. |
+| Security | Four safety layers | Security is built in. A SQL parser allows only read-only queries on approved tables. The database connection itself is read-only, and every query has a row limit and a timeout. |
+| Proof | 84% accuracy, 100% valid SQL, ~12 s, 76 tests | And I measured it. On a fifty-question benchmark it scores eighty-four percent, and seventy-six automated tests run on every change. |
+| Value | Days → seconds, analysts freed, zero risk | For a business, that means answers in seconds instead of days, analysts free for real work, and zero risk to the data. |
+| Close | Live link, QR code, GitHub | The project is live, and the full code is on GitHub. Try it yourself with the link below. If your team has a problem like this, I can build the solution: secure, tested, and ready to use. |
 
-**0:15–0:45 · First question (screen)**
-Click "How many active employees does each company have?"
-"I just type in plain English. It writes the SQL, runs it, and explains the answer, with a chart. And here's the exact SQL it used, so nothing is a black box."
-Open the **SQL used** expander for two seconds.
+## LinkedIn post
 
-**0:45–1:15 · Harder question + follow-up**
-Ask "What is the attrition rate per company over the last 12 months?" then "Now only show companies above 10%."
-"It follows our business definition of attrition from a glossary, and it remembers the conversation, so follow-ups work."
-
-**1:15–1:40 · Safety**
-Type "Delete all employees."
-"What if someone tries to change data? Every query passes a SQL parser that only allows a single read-only SELECT, and the database connection itself is read-only. It can't be talked into deleting anything."
-
-**1:40–2:05 · How it works (show the architecture diagram from the README)**
-"Under the hood it's a LangGraph agent: it picks the relevant tables, finds similar solved examples, writes the SQL, checks it, runs it, and if anything fails it reads the error and fixes itself, up to three times. It works with free models like Groq and Gemini, or fully offline with Ollama."
-
-**2:05–2:25 · Proof**
-Show the accuracy table.
-"I don't just say it works: I test it on 50 questions from easy to hard. It gets 78 to 84% right with a free NVIDIA Nemotron model, depending on the run. There are also 74 automated tests running on every push."
-
-**2:25–2:40 · Close**
-"All the data is fictional, and the full code is on GitHub. Link in the comments. I'd love feedback, especially from people working with HR and payroll data."
-
-## Post option 1 (story)
-
-> Payroll and HR teams ask great questions. The problem is that the answer usually sits behind SQL.
+> Every HR and payroll team has the same problem: the questions are simple, but the answers are locked behind SQL. 🔒
 >
-> So I built **TalkToData**: an AI assistant that turns plain-English questions into safe SQL, runs them, and explains the result with a chart.
+> "How many active employees do we have?"
+> "Which payroll exceptions are still open?"
 >
-> 🔹 Ask "Which payroll exceptions are older than 14 days?" and get the answer in seconds
-> 🔹 Every answer shows the exact SQL used, so nothing is a black box
-> 🔹 It can't change data: a SQL parser allows only read-only queries, and the database connection is read-only too
-> 🔹 If a query fails, the agent reads the error and fixes itself
-> 🔹 Tested on 50 questions: 78–84% execution accuracy with a free NVIDIA Nemotron model
-> 🔹 Runs on free models (Groq, Gemini) or fully offline with Ollama
+> Each one becomes a ticket, waits for an analyst, and decisions slow down. That costs time and money.
 >
-> Stack: Python · LangChain · LangGraph · SQLite · Streamlit · pytest · GitHub Actions
+> So I built **TalkToData**: an AI assistant that lets anyone ask HR and payroll data questions in plain English. 🤖
 >
-> All data is fictional (four made-up companies, ~635 made-up employees).
+> 🔹 Ask a question, get the answer in seconds, with a chart
+> 🔹 Every answer shows the exact SQL, the data and a CSV download, so nothing is a black box
+> 🔹 Secure by design: read-only SELECT queries on approved tables only, a read-only database connection, row limits and timeouts. Ask it to "delete all employees" and it refuses.
+> 🔹 An LLM inside a LangGraph agent picks the right tables, writes the SQL, checks it and fixes its own mistakes
+> 🔹 Measured, not guessed: 84% execution accuracy on a 50-question benchmark (78–84% across runs) and 76 automated tests on every change
 >
-> 🎥 2-minute demo below. Live app and code in the comments.
+> 🎥 Demo video below
+> 🌐 Try it live: https://hrpayrollassistant.streamlit.app/
+> 💻 Code on GitHub: https://github.com/brajeshpowwal/Ask-your-HR-payroll-Assistant-AI-Chat-Bot-
 >
-> What question would you ask your HR data first?
+> The demo runs on fictional data, but the same approach works on real HRMS, payroll, CRM or finance databases. If your team spends hours waiting for data answers, let's talk. I'd be glad to build it for you.
 >
-> #GenerativeAI #LangChain #LangGraph #TextToSQL #Python #HRAnalytics #DataAnalytics #LLM
+> #GenerativeAI #AI #LLM #TextToSQL #LangGraph #Python #HRTech #Payroll #DataAnalytics #Automation
 
-## Post option 2 (short and technical)
+### Short version
 
-> Built a text-to-SQL agent this month. What I learned:
+> I built an AI assistant that answers HR and payroll questions in plain English, in seconds, without ever being able to change the data. 🔒🤖
 >
-> 1️⃣ The model is the easy part. Context is the hard part: schema descriptions + a business glossary + similar examples made the biggest accuracy difference.
-> 2️⃣ Never trust generated SQL. I parse it with sqlglot and allow only a single SELECT, on a read-only connection.
-> 3️⃣ Let it fail and retry. Feeding the database error back to the model fixes most mistakes.
-> 4️⃣ Measure it. 50 test questions, execution accuracy 78–84% over repeated runs, with thinking on vs off compared.
+> ✅ Plain English → safe SQL → answer + chart
+> ✅ Read-only by design, every query visible
+> ✅ 84% accuracy on a 50-question benchmark, 76 automated tests
 >
-> Demo + code in the comments. Built with LangGraph, Streamlit and free LLMs.
+> 🌐 Live: https://hrpayrollassistant.streamlit.app/
+> 💻 GitHub: https://github.com/brajeshpowwal/Ask-your-HR-payroll-Assistant-AI-Chat-Bot-
 >
-> #AI #LLM #LangGraph #Python #DataEngineering
+> Have a data problem like this in your team? Let's build the solution together.
+>
+> #AI #LLM #GenerativeAI #HRTech #Python
 
-## First comment (post it yourself right after publishing)
+## First comment (post it right after publishing)
 
-> 🔗 Live demo: <your Streamlit link>
-> 💻 Code: <your GitHub link>
+> 🌐 Live demo (fictional data, ask anything): https://hrpayrollassistant.streamlit.app/
+> 💻 Code: https://github.com/brajeshpowwal/Ask-your-HR-payroll-Assistant-AI-Chat-Bot-
 > 📖 How it works: README → "How it works"
 
 ## Posting tips
 
-- Upload the video natively to LinkedIn (not a YouTube link); native video gets more reach.
-- Post Tuesday to Thursday morning in your target audience's time zone.
-- Reply to every comment in the first two hours.
-- Tag no more than 2–3 people, and only ones who would genuinely care.
-- Add the project to your LinkedIn **Featured** section and to the **Projects** section with the GitHub link.
-- On your resume: *"Built a text-to-SQL AI assistant (LangGraph, Python, SQLite) with 4-layer SQL safety and a 50-question benchmark (78–84% execution accuracy); deployed publicly on Streamlit."*
+- Upload the MP4 natively to LinkedIn (not a YouTube link); native video gets more reach. Add a title such as "TalkToData: ask your HR data in plain English".
+- LinkedIn shows fewer people posts with links in the text. If you want maximum reach, remove the two links from the post and keep them only in the first comment.
+- Post Tuesday to Thursday morning in your target audience's time zone, and reply to every comment in the first two hours.
+- Add the project to your LinkedIn **Featured** and **Projects** sections with the GitHub link.
+- Resume line: *"Built a text-to-SQL AI assistant (LLM, LangGraph, Python, SQLite) with 4-layer SQL safety and a 50-question benchmark (78–84% execution accuracy); deployed publicly on Streamlit."*
