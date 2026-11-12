@@ -30,7 +30,7 @@ Business teams wait days for simple data answers because only analysts can write
 - **Chat-style interface**: animated assistant header, typing indicator while it works, answers typed out word by word, sample-question cards, dark "night console" theme
 - **Swap the LLM with one setting**: Groq, Gemini, Ollama (local), Claude, NVIDIA
 - **Evaluation**: execution accuracy on 50 questions (easy / medium / hard)
-- **72 automated tests** run on every push with GitHub Actions
+- **74 automated tests** run on every push with GitHub Actions
 
 ## How it works
 
@@ -127,7 +127,7 @@ Results on the 50 questions (November 2026, NVIDIA free tier, thinking off):
 │   └── config.py            settings from .env
 ├── data/                    generator, schema docs, glossary, examples
 ├── eval/                    50 test questions + accuracy runner
-├── tests/                   72 pytest tests (no API key needed)
+├── tests/                   74 pytest tests (no API key needed)
 └── docs/                    how-to, interview guide, LinkedIn kit
 ```
 

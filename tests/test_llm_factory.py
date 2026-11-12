@@ -41,3 +41,14 @@ def test_retired_model_errors_are_recognised():
     assert is_retired_model_error(Exception("model_decommissioned: this model has been decommissioned"))
     assert not is_retired_model_error(Exception("[429] Too Many Requests"))
     assert not is_retired_model_error(Exception("[401] Unauthorized"))
+
+
+def test_hosting_secrets_are_trimmed_into_env(monkeypatch):
+    """A key pasted with a trailing space or newline is rejected by the provider (403)."""
+    from src.config import apply_secrets
+    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
+    monkeypatch.setenv("LLM_PROVIDER", "groq")
+    apply_secrets({"NVIDIA_API_KEY": "  nvapi-test\n", "LLM_PROVIDER": "nvidia", "nested": {"a": 1}})
+    import os
+    assert os.environ["NVIDIA_API_KEY"] == "nvapi-test"
+    assert os.environ["LLM_PROVIDER"] == "groq"  # real environment variables win over secrets

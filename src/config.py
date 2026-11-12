@@ -5,6 +5,7 @@ Nothing secret is ever hard-coded here. Copy .env.example to .env and fill it in
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -30,6 +31,17 @@ API_KEY_ENV = {
     "nvidia": "NVIDIA_API_KEY",
     "ollama": None,  # runs locally, no key needed
 }
+
+
+def apply_secrets(secrets: Mapping[str, object]) -> None:
+    """Copy hosting secrets (e.g. Streamlit Cloud) into env vars, trimmed.
+
+    Keys pasted into a web form often pick up a space or newline, which the provider
+    rejects as "Authorization failed". Real environment variables keep priority.
+    """
+    for key, value in secrets.items():
+        if isinstance(value, str):
+            os.environ.setdefault(key, value.strip())
 
 
 def _int(name: str, default: int) -> int:

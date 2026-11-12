@@ -4,7 +4,6 @@ Run:  streamlit run app/streamlit_app.py
 """
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
@@ -14,11 +13,11 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-# Streamlit Cloud keeps keys in "Secrets"; copy them into env vars before config loads.
+from src.config import apply_secrets  # noqa: E402
+
+# Streamlit Cloud keeps keys in "Secrets"; copy them into env vars before settings are read.
 try:
-    for key, value in st.secrets.items():
-        if isinstance(value, str):
-            os.environ.setdefault(key, value)
+    apply_secrets(st.secrets)
 except Exception:  # no secrets file locally, that's fine
     pass
 
